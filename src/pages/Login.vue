@@ -8,13 +8,26 @@ import { useAuthStore } from '../store/auth.store'
 const router = useRouter()
 const auth = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const loading = ref(false)
 
-const handleLogin = () => {
-    auth.login()
-    router.push('/dashboard')
+const handleLogin = async () => {
+    try {
+        loading.value = true
+
+        await auth.login({
+            username: username.value,
+            password: password.value,
+        })
+
+        router.push('/dashboard')
+    } catch (err) {
+        console.error(err)
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
@@ -46,7 +59,7 @@ const handleLogin = () => {
                     </h2>
                 </div>
                 <div class="space-y-5">
-                    <n-input v-model:value="email" placeholder="Email" size="large" class="shadow-md rounded-xl" />
+                    <n-input v-model:value="username" placeholder="Username" size="large" class="shadow-md rounded-xl" />
                     <div class="relative">
                         <n-input v-model:value="password" :type="showPassword ? 'text' : 'password'"
                             placeholder="Password" size="large" class="shadow-md rounded-xl pr-10" />
