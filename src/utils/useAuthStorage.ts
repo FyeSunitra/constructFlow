@@ -28,7 +28,7 @@ export function clearAuth() {
 export function useAuth(
   key: "accessToken" | "refreshToken" | "user" | "expiresIn",
 ) {
-  const raw = localStorage.getItem("app_auth");
+  const raw = localStorage.getItem(KeyStorage.AUTH);
   if (!raw) return null;
 
   try {

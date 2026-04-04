@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { NInput, NButton } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
@@ -21,7 +21,7 @@ const handleLogin = async () => {
             username: username.value,
             password: password.value,
         })
-
+        await nextTick()
         router.push('/dashboard')
     } catch (err) {
         console.error(err)
@@ -59,7 +59,8 @@ const handleLogin = async () => {
                     </h2>
                 </div>
                 <div class="space-y-5">
-                    <n-input v-model:value="username" placeholder="Username" size="large" class="shadow-md rounded-xl" />
+                    <n-input v-model:value="username" placeholder="Username" size="large"
+                        class="shadow-md rounded-xl" />
                     <div class="relative">
                         <n-input v-model:value="password" :type="showPassword ? 'text' : 'password'"
                             placeholder="Password" size="large" class="shadow-md rounded-xl pr-10" />
