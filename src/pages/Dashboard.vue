@@ -22,9 +22,9 @@ const handleNewProject = () => {
   <div class="flex h-screen overflow-hidden">
     <AppSidebar />
 
-    <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+    <div class="flex-1 flex flex-col overflow-hidden bg-[--body]">
       <!-- Top bar -->
-      <header class="shrink-0 bg-white border-b border-gray-100 px-6 py-3">
+      <header class="shrink-0 bg-white border-b border-gray-200 px-6 py-6">
         <AppBreadcrumb />
       </header>
 

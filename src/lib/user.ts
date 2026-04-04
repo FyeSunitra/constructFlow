@@ -2,7 +2,7 @@ import type { UserRole } from "@/types/user";
 
 export const ROLE_META: Record<UserRole, { type: 'info' | 'success'; label: string }> = {
   CEO:      { type: 'info',    label: 'CEO'      },
-  Engineer: { type: 'success', label: 'Engineer' },
+  ENGINEER: { type: 'success', label: 'Engineer' },
 }
  
 /** Deterministic avatar background from a seed string */

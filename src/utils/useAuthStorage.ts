@@ -1,4 +1,4 @@
-import type { User } from "../types/auth";
+import type { User } from "@/types/user";
 import { KeyStorage } from "./constant";
 
 type AuthStorage = {

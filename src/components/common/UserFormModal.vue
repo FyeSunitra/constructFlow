@@ -17,7 +17,7 @@ import { ROLE_META } from '@/lib/user';
 const props = defineProps<{ show: boolean; editing: User | null }>()
 const emit = defineEmits<{
     'update:show': [v: boolean]
-    'saved': [form: UserForm, id: number | null]
+    'saved': [form: UserForm, id: string | null]
 }>()
 
 const { isMobile } = useBreakpoint()

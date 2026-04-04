@@ -1,7 +1,7 @@
-export type UserRole = 'CEO' | 'Engineer'
+export type UserRole = 'CEO' | 'ENGINEER'
  
 export interface User {
-  id:         number
+  id:         string
   username:   string
   email:      string
   first_name: string
@@ -40,7 +40,7 @@ export const ROLE_OPTIONS: RoleOption[] = [
     color: '#185FA5',
   },
   {
-    value: 'Engineer',
+    value: 'ENGINEER',
     label: 'Engineer',
     desc:  'อัปเดตงานและ daily',
     icon:  'lucide:hard-hat',

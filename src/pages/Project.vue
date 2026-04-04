@@ -1,3 +1,6 @@
+<script setup lang="ts">
+
+</script>
 <template>
     <div class="flex">
         <AppSidebar />
@@ -11,6 +14,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-</script>

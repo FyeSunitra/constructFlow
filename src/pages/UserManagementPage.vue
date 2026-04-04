@@ -3,75 +3,43 @@ export default { name: 'UserManagementPage' }
 </script>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { NButton, NInput, NSelect, NEmpty, useMessage } from 'naive-ui'
+import { ref, computed, onMounted, watch } from 'vue'
+import {
+    NButton, NInput, NSelect, NEmpty, NSwitch,
+    NPopconfirm, NTooltip, NSpace, useMessage,
+} from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import { type User, type UserForm, type UserRole } from '@/types/user'
-import App from '@/App.vue';
-
-// ─── State ────────────────────────────────────────────────────────────────────
+import { useBreakpoint } from '@/composables/useBreakpoint';
+import { userService } from '@/services/user.service';
 
 const message = useMessage()
+const { breakpoint, isMobile } = useBreakpoint()
+
 const showModal = ref(false)
 const editingUser = ref<User | null>(null)
+
+const users = ref<User[]>([])
+const loading = ref(false)
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalItems = ref(0)
+
 const search = ref('')
 const filterRole = ref<UserRole | 'all'>('all')
-const currentPage = ref(1)
-const PAGE_SIZE = 8
+const isActive = ref<boolean | 'all'>('all')
 
-let nextId = 6
+const emptyColspan = computed(() => breakpoint.value === 'desktop' ? 6 : 4)
 
-const users = ref<User[]>([
-    { id: 1, username: 'admin001', email: 'admin@pbt.co.th', first_name: 'สมชาย', last_name: 'ใจดี', role: 'CEO', is_active: true, created_at: '2025-01-10' },
-    { id: 2, username: 'naree.k', email: 'naree@pbt.co.th', first_name: 'นารี', last_name: 'กล้าหาญ', role: 'Engineer', is_active: true, created_at: '2025-02-14' },
-    { id: 3, username: 'wanchai.p', email: 'wanchai@pbt.co.th', first_name: 'วันชัย', last_name: 'พงศ์ดี', role: 'Engineer', is_active: true, created_at: '2025-03-01' },
-    { id: 4, username: 'siriporn.t', email: 'siriporn@pbt.co.th', first_name: 'ศิริพร', last_name: 'ทองดี', role: 'CEO', is_active: false, created_at: '2025-03-15' },
-    { id: 5, username: 'krit.s', email: 'krit@pbt.co.th', first_name: 'กฤต', last_name: 'สมบูรณ์', role: 'Engineer', is_active: true, created_at: '2025-04-02' },
-])
-
-// ─── Computed ─────────────────────────────────────────────────────────────────
-
-const filteredUsers = computed(() => {
-    const q = search.value.toLowerCase()
-    currentPage.value = 1
-    return users.value.filter(u => {
-        const matchRole = filterRole.value === 'all' || u.role === filterRole.value
-        const matchSearch = !q || [u.username, u.email, u.first_name, u.last_name]
-            .some(s => s.toLowerCase().includes(q))
-        return matchRole && matchSearch
-    })
-})
-
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / PAGE_SIZE)))
-const pagedUsers = computed(() => {
-    const start = (currentPage.value - 1) * PAGE_SIZE
-    return filteredUsers.value.slice(start, start + PAGE_SIZE)
-})
-
-const stats = computed(() => ({
-    total: users.value.length,
-    active: users.value.filter(u => u.is_active).length,
-    ceo: users.value.filter(u => u.role === 'CEO').length,
-    engineer: users.value.filter(u => u.role === 'Engineer').length,
-}))
-
-// ─── Actions ──────────────────────────────────────────────────────────────────
-
-function openCreate() {
-    editingUser.value = null
-    showModal.value = true
-}
-
-function openEdit(user: User) {
-    editingUser.value = { ...user }
-    showModal.value = true
-}
+function openCreate() { editingUser.value = null; showModal.value = true }
+function openEdit(user: User) { editingUser.value = { ...user }; showModal.value = true }
 
 function toggleActive(user: User) {
-    const target = users.value.find(u => u.id === user.id)
-    if (!target) return
-    target.is_active = !target.is_active
-    message.success(`${target.is_active ? 'เปิด' : 'ปิด'}การใช้งาน ${target.first_name} แล้ว`)
+    const t = users.value.find(u => u.id === user.id)
+    if (!t) return
+    t.is_active = !t.is_active
+    message.success(`${t.is_active ? 'เปิด' : 'ปิด'}การใช้งาน ${t.first_name} แล้ว`)
 }
 
 function deleteUser(user: User) {
@@ -79,35 +47,50 @@ function deleteUser(user: User) {
     message.success('ลบผู้ใช้งานเรียบร้อย')
 }
 
-function onSaved(form: UserForm, id: number | null) {
-    if (id !== null) {
-        const idx = users.value.findIndex(u => u.id === id)
-        if (idx > -1) {
-            users.value[idx] = {
-                ...users.value[idx],
-                username: form.username,
-                email: form.email,
-                first_name: form.first_name,
-                last_name: form.last_name,
-                role: form.role!,
-                is_active: form.is_active,
-            }
+const onSaved = async (form: UserForm, id: string | null) => {
+    try {
+        if (id) {
+            message.success('อัปเดตสำเร็จ')
+        } else {
+            await userService.createUser(form)
+            message.success('สร้างผู้ใช้งานสำเร็จ')
+            fetchUsers()
         }
-        message.success('บันทึกข้อมูลเรียบร้อย')
-    } else {
-        users.value.unshift({
-            id: nextId++,
-            username: form.username,
-            email: form.email,
-            first_name: form.first_name,
-            last_name: form.last_name,
-            role: form.role!,
-            is_active: form.is_active,
-            created_at: new Date().toISOString().split('T')[0],
-        })
-        message.success('สร้างผู้ใช้งานสำเร็จ')
+    } catch (err: any) {
+        message.error(err?.message || 'เกิดข้อผิดพลาด')
     }
 }
+
+const fetchUsers = async () => {
+    try {
+        loading.value = true
+
+        const res = await userService.getUsers({
+            page: currentPage.value,
+            limit: pageSize.value,
+            role: filterRole.value === 'all' ? undefined : filterRole.value,
+            is_active: isActive.value === 'all' ? undefined : isActive.value,
+            searchKeyword: search.value || undefined,
+        })
+
+        users.value = res.data
+        totalItems.value = res.meta.total
+    } finally {
+        loading.value = false
+    }
+}
+
+onMounted(fetchUsers)
+
+watch(currentPage, () => {
+    fetchUsers()
+})
+
+watch([search, filterRole, isActive], () => {
+    currentPage.value = 1
+    fetchUsers()
+})
+
 </script>
 
 <template>
@@ -115,93 +98,137 @@ function onSaved(form: UserForm, id: number | null) {
         <AppSidebar />
 
         <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-            <header class="shrink-0 bg-white border-b border-gray-100 px-6 py-3">
+            <header class="shrink-0 bg-white border-b border-gray-100 px-4 md:px-6 py-3">
                 <AppBreadcrumb />
             </header>
 
-
-            <main class="flex-1 overflow-y-auto p-6 space-y-6">
-                <!-- Page header -->
-                <div class="flex items-start justify-between mb-6">
+            <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-lg font-medium text-gray-900 mb-0.5">จัดการผู้ใช้งาน</h1>
-                        <p class="text-sm text-gray-400">เพิ่ม แก้ไข และจัดการสิทธิ์ผู้ใช้ทั้งหมด</p>
+                        <h1 class="text-base md:text-lg font-medium text-gray-900 mb-0.5">จัดการผู้ใช้งาน</h1>
+                        <p class="text-xs md:text-sm text-gray-400 hidden sm:block">เพิ่ม แก้ไข
+                            และจัดการสิทธิ์ผู้ใช้ทั้งหมด</p>
                     </div>
-                    <NButton type="primary" style="background:#0F6E56;border:none" @click="openCreate">
+                    <NButton type="primary" :size="isMobile() ? 'small' : 'medium'"
+                        style="background:#0F6E56;border:none" @click="openCreate">
                         <template #icon>
-                            <Icon icon="lucide:user-plus" style="width:15px;height:15px" />
+                            <Icon icon="lucide:user-plus" style="width:14px;height:14px" />
                         </template>
-                        เพิ่มผู้ใช้งาน
+                        <span class="hidden sm:inline">เพิ่มผู้ใช้งาน</span>
+                        <span class="sm:hidden">เพิ่ม</span>
                     </NButton>
                 </div>
 
-                <!-- Table card -->
                 <div class="rounded-xl border bg-white overflow-hidden" style="border:0.5px solid #E3E1D8">
-
-                    <!-- Toolbar -->
-                    <div class="flex items-center gap-3 px-4 py-3" style="border-bottom:0.5px solid #F1EFE8">
-                        <NInput v-model:value="search" placeholder="ค้นหาชื่อ, username, อีเมล..." clearable
-                            style="max-width:280px">
+                    <div class="flex flex-wrap items-center gap-2 px-3 md:px-4 py-2.5"
+                        style="border-bottom:0.5px solid #F1EFE8">
+                        <NInput v-model:value="search" placeholder="ค้นหา..." clearable size="small" class="flex-1"
+                            style="min-width:0;max-width:260px">
                             <template #prefix>
-                                <Icon icon="lucide:search" style="width:14px;height:14px;color:#B4B2A9" />
+                                <Icon icon="lucide:search" style="width:13px;height:13px;color:#B4B2A9" />
                             </template>
                         </NInput>
 
                         <NSelect v-model:value="filterRole" :options="[
                             { label: 'ทุก Role', value: 'all' },
                             { label: 'CEO', value: 'CEO' },
-                            { label: 'Engineer', value: 'Engineer' },
-                        ]" style="width:140px" />
+                            { label: 'Engineer', value: 'ENGINEER' },
+                        ]" size="small" style="width:130px" />
 
-                        <span class="ml-auto text-xs text-gray-400">
-                            {{ filteredUsers.length }} รายการ
+                        <span class="ml-auto text-xs text-gray-400 whitespace-nowrap">
+                            {{ totalItems }} รายการ
                         </span>
                     </div>
 
-                    <!-- Table -->
-                    <table style="width:100%;border-collapse:collapse">
-                        <thead>
-                            <tr style="border-bottom:0.5px solid #F1EFE8;background:#FAFAF9">
-                                <th
-                                    style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left">
-                                    ผู้ใช้งาน
-                                </th>
-                                <th
-                                    style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left">
-                                    อีเมล</th>
-                                <th
-                                    style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;width:130px">
-                                    Role</th>
-                                <th
-                                    style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;width:120px">
-                                    สถานะ</th>
-                                <th
-                                    style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;width:130px">
-                                    สร้างเมื่อ</th>
-                                <th style="width:90px"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-if="pagedUsers.length > 0">
-                                <UserTableRow v-for="user in pagedUsers" :key="user.id" :user="user" @edit="openEdit"
-                                    @delete="deleteUser" @toggle="toggleActive" />
-                            </template>
-                            <tr v-else>
-                                <td colspan="6">
-                                    <NEmpty description="ไม่พบผู้ใช้งาน" style="padding:48px 0" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <template v-if="isMobile()">
+                        <template v-if="users.length > 0">
+                            <div v-for="user in users" :key="user.id" class="flex items-center gap-3 px-4 py-3"
+                                style="border-bottom:0.5px solid #F7F6F2">
+                                <UserAvatar :first-name="user.first_name" :last-name="user.last_name"
+                                    :username="user.username" :size="40" />
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-sm font-medium text-gray-800 truncate">
+                                            {{ user.first_name }} {{ user.last_name }}
+                                        </span>
+                                        <UserRoleTag :role="user.role" />
+                                    </div>
+                                    <div class="text-xs text-gray-400 truncate mt-0.5">{{ user.email }}</div>
+                                </div>
+                                <div class="flex items-center gap-1 flex-shrink-0">
+                                    <NSwitch :value="user.is_active" size="small" @update:value="toggleActive(user)" />
+                                    <NButton quaternary circle size="small" @click="openEdit(user)">
+                                        <template #icon>
+                                            <Icon icon="lucide:pencil" style="width:13px;height:13px" />
+                                        </template>
+                                    </NButton>
+                                    <NPopconfirm positive-text="ลบ" negative-text="ยกเลิก"
+                                        :positive-button-props="{ type: 'error' }" @positive-click="deleteUser(user)">
+                                        <template #trigger>
+                                            <NButton quaternary circle size="small" type="error">
+                                                <template #icon>
+                                                    <Icon icon="lucide:trash-2" style="width:13px;height:13px" />
+                                                </template>
+                                            </NButton>
+                                        </template>
+                                        ลบ {{ user.first_name }}?
+                                    </NPopconfirm>
+                                </div>
+                            </div>
+                        </template>
+                        <NEmpty v-else description="ไม่พบผู้ใช้งาน" style="padding:40px 0" />
+                    </template>
 
-                    <!-- Pagination -->
-                    <div class="flex items-center justify-center px-4 py-3">
-                        <AppPagination v-model:page="currentPage" :total="filteredUsers.length"
-                            :page-size="PAGE_SIZE" />
+                    <template v-else>
+                        <div class="overflow-x-auto w-full">
+                            <table style="width:100%;min-width:520px;border-collapse:collapse;table-layout:auto">
+                                <thead>
+                                    <tr style="border-bottom:0.5px solid #F1EFE8;background:#FAFAF9">
+                                        <th
+                                            style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;white-space:nowrap">
+                                            ผู้ใช้งาน
+                                        </th>
+                                        <!-- email: desktop only -->
+                                        <th v-if="breakpoint === 'desktop'"
+                                            style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;white-space:nowrap">
+                                            อีเมล
+                                        </th>
+                                        <th
+                                            style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;white-space:nowrap;width:120px">
+                                            Role
+                                        </th>
+                                        <th
+                                            style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;white-space:nowrap;width:110px">
+                                            สถานะ
+                                        </th>
+                                        <th v-if="breakpoint === 'desktop'"
+                                            style="padding:10px 16px;font-size:12px;color:#888780;font-weight:500;text-align:left;white-space:nowrap;width:120px">
+                                            สร้างเมื่อ
+                                        </th>
+                                        <th style="width:80px" />
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template v-if="users.length > 0">
+                                        <UserTableRow v-for="user in users" :key="user.id" :user="user"
+                                            :breakpoint="breakpoint" @edit="openEdit" @delete="deleteUser"
+                                            @toggle="toggleActive" />
+                                    </template>
+                                    <tr v-else>
+                                        <td :colspan="emptyColspan">
+                                            <NEmpty description="ไม่พบผู้ใช้งาน" style="padding:48px 0" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+
+                    <div class="flex items-center justify-center px-4 py-3" style="border-top:0.5px solid #F1EFE8">
+                        <AppPagination v-model:page="currentPage" :total="totalItems" :page-size="pageSize" />
                     </div>
                 </div>
 
-                <!-- Modal -->
                 <UserFormModal v-model:show="showModal" :editing="editingUser" @saved="onSaved" />
             </main>
         </div>

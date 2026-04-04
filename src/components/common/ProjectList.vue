@@ -34,7 +34,7 @@ const filtered = computed(() =>
 )
 
 // ---- Pagination ----
-const perPage = 6
+const perPage = 9
 const currentPage = ref(1)
 
 watch([search, selectedFilter], () => { currentPage.value = 1 })
@@ -46,10 +46,10 @@ const paginated = computed(() => {
 </script>
 
 <template>
-  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+  <div class="">
 
     <!-- Header -->
-    <div class="flex flex-wrap items-center gap-3 mb-6">
+    <div class="flex flex-wrap items-center gap-3 mb-4">
       <h2 class="text-xl font-bold text-[var(--primary)] mr-auto">Projects</h2>
 
       <!-- Search -->
