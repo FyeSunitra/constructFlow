@@ -4,8 +4,8 @@
 <template>
     <div class="flex">
         <AppSidebar />
-        <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-            <header class="shrink-0 bg-white border-b border-gray-100 px-6 py-3 flex items-center">
+        <div class="flex-1 flex flex-col overflow-hidden bg-[--body]">
+            <header class="shrink-0 bg-white border-b border-gray-200 px-6 py-3 flex items-center">
                 <AppBreadcrumb />
             </header>
 

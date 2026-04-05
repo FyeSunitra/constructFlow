@@ -1,7 +1,13 @@
 import axios, { type AxiosRequestConfig } from "axios";
-import { useAccessToken } from "../utils/useAuthStorage";
+import { clearAuth, useAccessToken } from "../utils/useAuthStorage";
+import { useAuthStore } from "@/store/auth.store";
+import router from "@/router";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const api = axios.create({
+  baseURL: BASE_URL,
+});
 
 const header = (isFormData = false) => {
   const token = useAccessToken();
@@ -13,10 +19,7 @@ const header = (isFormData = false) => {
 };
 
 const request = async (config: AxiosRequestConfig) => {
-  return axios({
-    baseURL: BASE_URL,
-    ...config,
-  })
+  return api(config)
     .then(handleSuccess)
     .catch(handleError);
 };
@@ -70,14 +73,22 @@ function handleSuccess(res: any) {
 
 function handleError(error: any) {
   if (error?.response?.status === 401) {
-    localStorage.removeItem("token");
-    window.location.href = "/login";
+    console.warn("Token expired");
+
+    const auth = useAuthStore();
+
+    clearAuth();
+    auth.user = null;
+    auth.isAuthenticated = false;
+
+    router.push("/login");
   }
 
   return Promise.reject(
-    error?.response?.data || error?.message || "System Error",
+    error?.response?.data || error?.message || "System Error"
   );
 }
+
 export const http = {
   get,
   post,

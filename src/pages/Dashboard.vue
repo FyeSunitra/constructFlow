@@ -23,14 +23,11 @@ const handleNewProject = () => {
     <AppSidebar />
 
     <div class="flex-1 flex flex-col overflow-hidden bg-[--body]">
-      <!-- Top bar -->
       <header class="shrink-0 bg-white border-b border-gray-200 px-6 py-6">
         <AppBreadcrumb />
       </header>
 
-      <!-- Scrollable content -->
       <main class="flex-1 overflow-y-auto p-6 space-y-6">
-        <!-- Stats row -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard v-for="stat in stats" :key="stat.label" :label="stat.label" :value="stat.value" />
         </div>

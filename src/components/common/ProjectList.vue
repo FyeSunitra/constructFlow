@@ -33,7 +33,6 @@ const filtered = computed(() =>
   })
 )
 
-// ---- Pagination ----
 const perPage = 9
 const currentPage = ref(1)
 

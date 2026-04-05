@@ -6,12 +6,15 @@ import UserManagementPage from "@/pages/UserManagementPage.vue";
 import { useAuthStore } from "../store/auth.store";
 import { useAccessToken } from "../utils/useAuthStorage";
 import { storeToRefs } from "pinia";
+import TemplatePage from "@/pages/TemplatePage.vue";
+
 
 const routes = [
   { path: "/login", component: Login },
   { path: "/", redirect: "/dashboard" },
   { path: "/dashboard", component: Dashboard },
   { path: "/project", component: Project },
+  { path: "/template", component: TemplatePage },
   { path: '/users', component: UserManagementPage }
 ];
 
