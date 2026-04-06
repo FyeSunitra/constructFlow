@@ -33,6 +33,7 @@ const mainMenu = [
     ...(isCEO()
         ? [
             { label: 'Template', path: '/template', icon: 'mdi:layers-outline' },
+            { label: 'Users', path: '/users', icon: 'mdi:users-outline' },
             { label: 'Setting', path: '/setting', icon: 'mdi:cog-outline' },
         ]
         : []),

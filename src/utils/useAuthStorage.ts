@@ -1,4 +1,4 @@
-import type { User } from "../types/auth";
+import type { User } from "@/types/user";
 import { KeyStorage } from "./constant";
 
 type AuthStorage = {
@@ -28,7 +28,7 @@ export function clearAuth() {
 export function useAuth(
   key: "accessToken" | "refreshToken" | "user" | "expiresIn",
 ) {
-  const raw = localStorage.getItem("app_auth");
+  const raw = localStorage.getItem(KeyStorage.AUTH);
   if (!raw) return null;
 
   try {

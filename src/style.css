@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  --body: #EAF7FA;
   --primary: #178A73;
   --orange: #F17024;
   --yellow: #F09E26;
