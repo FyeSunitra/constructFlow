@@ -17,15 +17,23 @@ const { isMobile } = useBreakpoint()
 const showModal = ref(false)
 const templates = ref<Template[]>([])
 const editingTpl = ref<Template | null>(null)
-const search = ref('')
 const saving = ref(false)
 
 const perPage = 9
 const currentPage = ref(1)
+const pageSize = ref(10)
+const totalItems = ref(0)
+const search = ref('')
+const isActive = ref<boolean | 'all'>('all')
 
 const fetchTemplates = async () => {
     try {
-        const res = await templateService.getTemplate()
+        const res = await templateService.getTemplate({
+            page: currentPage.value,
+            limit: pageSize.value,
+            is_active: isActive.value === 'all' ? undefined : isActive.value,
+            searchKeyword: search.value || undefined,
+        })
         templates.value = res.data
     } catch (err: any) {
         message.error(err?.message || 'เกิดข้อผิดพลาด')
@@ -131,7 +139,7 @@ watch([search], () => {
                     :description="search ? 'ไม่พบแม่แบบที่ตรงกับการค้นหา' : 'ยังไม่มีแม่แบบ กด เพิ่มแม่แบบ เพื่อเริ่มต้น'"
                     style="padding:48px 0" />
 
-                <AppPagination v-model:page="currentPage" :total="filtered.length" :page-size="perPage" />
+                <AppPagination v-model:page="currentPage" :total="totalItems" :page-size="perPage" />
             </main>
         </div>
     </div>

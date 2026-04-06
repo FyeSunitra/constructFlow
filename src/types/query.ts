@@ -4,4 +4,5 @@ export interface Query {
   joinTable?: boolean
   is_active?: boolean | "all"
   searchKeyword?: string
+  status?: string
 }
