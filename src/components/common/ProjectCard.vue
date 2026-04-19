@@ -1,70 +1,69 @@
-<script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import { useRouter } from 'vue-router'
+<script lang="ts">
+export default { name: 'ProjectCard' }
+</script>
 
-const props = defineProps<{
-    id: string | number
-    name: string
-    location: string
-    startDate: string
-    endDate: string
-    status: 'IN PROGRESS' | 'DELAYED' | 'COMPLETED' | string
-    phase?: string
-    area?: string
+<script setup lang="ts">
+import { computed } from 'vue'
+import { Icon } from '@iconify/vue'
+import { useAuthStore } from '@/store/auth.store'
+import type { Project } from '@/types/project'
+import { STATUS_META, formatDate } from '@/lib/project'
+
+const props = defineProps<{ project: Project }>()
+const emit = defineEmits<{
+    select: [project: Project]
+    edit: [project: Project]
 }>()
 
-const router = useRouter()
-
-const statusStyle: Record<string, string> = {
-    'IN PROGRESS': 'bg-orange-400 text-white',
-    'DELAYED': 'bg-red-400 text-white',
-    'COMPLETED': 'bg-emerald-500 text-white',
-}
-
-const go = () => router.push(`/project/${props.id}`)
+const auth = useAuthStore()
+const isCEO = computed(() => auth.user?.role === 'CEO')
+const meta = STATUS_META[props.project.status] ?? { label: props.project.status, color: '#5F5E5A', bg: '#F1EFE8' }
 </script>
 
 <template>
-    <div class="bg-white border border-gray-100 rounded-xl shadow-sm p-4 flex flex-col gap-3 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-        @click="go">
-        <!-- Header -->
-        <div class="flex items-start justify-between gap-2">
-            <h3 class="text-sm font-semibold text-gray-800 leading-snug">{{ name }}</h3>
-            <span class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                :class="statusStyle[status] ?? 'bg-gray-200 text-gray-600'">
-                {{ status }}
+    <div class="bg-white rounded-xl p-4 flex flex-col gap-3 transition-all duration-150 hover:-translate-y-0.5 relative"
+        style="border:0.5px solid #E3E1D8;cursor:pointer" @click="emit('select', project)">
+        <!-- Edit button — always visible, CEO only -->
+        <button v-if="isCEO"
+            class="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center z-10 transition-colors hover:border-emerald-500 hover:text-emerald-700"
+            style="border:0.5px solid #E3E1D8;background:#fff;color:#888780" title="แก้ไขโปรเจ็ค"
+            @click.stop="emit('edit', project)">
+            <Icon icon="lucide:pencil" style="width:13px;height:13px" />
+        </button>
+
+        <!-- Status badge + name (pad right when CEO to avoid overlap with edit btn) -->
+        <div class="flex items-start justify-between gap-2" :class="isCEO ? 'pr-8' : ''">
+            <div class="text-sm font-semibold text-gray-800 leading-snug flex-1">{{ project.name }}</div>
+            <span class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-medium"
+                :style="{ background: meta.bg, color: meta.color }">
+                {{ meta.label }}
             </span>
         </div>
 
-        <!-- Location -->
-        <div class="flex items-center gap-1.5 text-xs text-gray-500">
-            <Icon icon="mdi:account-outline" width="13" class="shrink-0" />
-            {{ location }}
+        <!-- Owner -->
+        <div class="flex items-center gap-1.5 text-xs text-gray-400">
+            <Icon icon="lucide:user" style="width:11px;height:11px" />
+            {{ project.owner_name ?? '—' }}
         </div>
 
-        <!-- Date -->
-        <div class="flex items-center gap-1.5 text-xs text-gray-500">
-            <Icon icon="mdi:calendar-outline" width="13" class="shrink-0" />
-            {{ startDate }} – {{ endDate }}
+        <!-- Dates -->
+        <div class="flex items-center gap-1.5 text-xs text-gray-400">
+            <Icon icon="lucide:calendar" style="width:11px;height:11px" />
+            {{ formatDate(project.start_date) }} – {{ formatDate(project.end_date) }}
         </div>
 
-        <!-- Phase tag -->
-        <div v-if="phase" class="flex items-center gap-2">
-            <span
-                class="text-[10px] font-semibold bg-blue-100 text-blue-600 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                {{ phase }}
+        <!-- Meta chips -->
+        <div class="flex gap-1.5 flex-wrap mt-auto">
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+                style="background:#E1F5EE;color:#0F6E56">
+                <Icon icon="lucide:layers" style="width:9px;height:9px" />
+                {{ project._count.phases }} Phase
             </span>
-        </div>
-
-        <!-- Footer -->
-        <div class="flex items-center justify-between mt-1 pt-2 border-t border-gray-100">
-            <div class="flex items-center gap-1.5 text-xs text-gray-500">
-                <Icon icon="mdi:home-outline" width="13" class="shrink-0" />
-                {{ area }}
-            </div>
-            <div class="w-6 h-6 rounded-full bg-[var(--primary)]/10 flex items-center justify-center">
-                <Icon icon="mdi:arrow-right" width="13" class="text-[var(--primary)]" />
-            </div>
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+                style="background:#FAEEDA;color:#854F0B">
+                <Icon icon="lucide:users" style="width:9px;height:9px" />
+                {{ project._count.assignments }} คน
+            </span>
         </div>
     </div>
 </template>

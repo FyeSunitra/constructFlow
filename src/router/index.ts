@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Login from "@/pages/Login.vue";
 import Dashboard from "@/pages/Dashboard.vue";
-import Project from "@/pages/Project.vue";
+import ProjectDetailPage from "@/pages/ProjectDetailPage.vue";
 import UserManagementPage from "@/pages/UserManagementPage.vue";
+import DailyUpdatePage from "@/pages/DailyUpdatePage.vue";
+import BudgetPage from "@/pages/BudgetPage.vue";
+import PhasePage from "@/pages/PhasePage.vue";
 import { useAuthStore } from "../store/auth.store";
 import { useAccessToken } from "../utils/useAuthStorage";
 import { storeToRefs } from "pinia";
@@ -13,7 +16,10 @@ const routes = [
   { path: "/login", component: Login },
   { path: "/", redirect: "/dashboard" },
   { path: "/dashboard", component: Dashboard },
-  { path: "/project", component: Project },
+  { path: "/project/:id", component: ProjectDetailPage },
+  { path: "/project/:id/phase", component: PhasePage },
+  { path: "/project/:id/daily", component: DailyUpdatePage },
+  { path: "/project/:id/budget", component: BudgetPage },
   { path: "/template", component: TemplatePage },
   { path: '/users', component: UserManagementPage }
 ];
