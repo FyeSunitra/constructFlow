@@ -6,10 +6,9 @@ export default { name: 'DashboardPage' }
 import { ref, computed, watch, onMounted } from 'vue'
 import { useMessage } from 'naive-ui'
 import { projectService } from '@/services/project.service'
-import NewProjectModal from '@/components/common/NewProjectModal.vue'
 import ProjectList from '@/components/common/ProjectList.vue'
 import type { Project } from '@/types/project'
-import type { buildProjectPayload } from '@/lib/project'
+import router from '@/router'
 
 const message = useMessage()
 
@@ -36,11 +35,11 @@ async function fetchProjects() {
       limit: pageSize.value,
       searchKeyword: search.value || undefined,
       status: statusFilter.value !== 'all' ? statusFilter.value : undefined,
+      joinTable: true,
     })
-    projects.value = res.data
-    // const data = (res as any)?.data
-    // projects.value = data?.data ?? []
-    // total.value = data?.meta?.total ?? 0
+    const data = (res as any)?.data
+    projects.value = data?.data ?? (res as any)?.data ?? []
+    total.value = data?.meta?.total ?? projects.value.length
   } catch (err) {
     message.error('โหลดโปรเจ็คไม่สำเร็จ')
     console.error('[Dashboard] fetchProjects error', err)
@@ -50,40 +49,30 @@ async function fetchProjects() {
 }
 
 watch([page, search, statusFilter], fetchProjects)
-
 watch([search, statusFilter], () => { page.value = 1 })
-
 onMounted(fetchProjects)
 
-const showNewProjectModal = ref(false)
-const savingProject = ref(false)
+// ─── Modal (shared create / edit) ─────────────────────────────────────────────
 
-async function onProjectSaved(
-  payload: ReturnType<typeof buildProjectPayload>,
-  files: File[],
-) {
-  savingProject.value = true
-  try {
-    const res = await projectService.create(payload)
-    const projectId = (res as any)?.data?.id as string | undefined
+const showModal = ref(false)
+const editingProject = ref<Project | null>(null)
 
-    // if (files.length && projectId) {
-    //   await projectService.uploadDocuments(projectId, files)
-    // }
+function openCreate() {
+  editingProject.value = null
+  showModal.value = true
+}
 
-    message.success('สร้างโครงการสำเร็จ')
-    await fetchProjects()
-  } catch (err) {
-    message.error('สร้างโครงการไม่สำเร็จ กรุณาลองใหม่')
-    console.error('[Dashboard] create project error', err)
-  } finally {
-    savingProject.value = false
-  }
+function openEdit(project: Project) {
+  editingProject.value = project
+  showModal.value = true
+}
+
+function onSaved() {
+  fetchProjects()
 }
 
 function onSelectProject(project: Project) {
-  // router.push(`/project/${project.id}`)
-  console.log('select project', project.id)
+  router.push(`/project/${project.id}`)
 }
 </script>
 
@@ -98,20 +87,19 @@ function onSelectProject(project: Project) {
 
       <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
 
-        <!-- Stats row -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard v-for="stat in stats" :key="stat.label" :label="stat.label" :value="stat.value" :icon="stat.icon"
             :bg="stat.bg" :color="stat.color" />
         </div>
 
-        <!-- Project list -->
         <ProjectList :projects="projects" :loading="loadingList" :total="total" :page="page" :page-size="pageSize"
-          :search="search" :status-filter="statusFilter" @new-project="showNewProjectModal = true"
-          @update:page="page = $event" @update:search="search = $event" @update:status-filter="statusFilter = $event"
-          @select="onSelectProject" />
+          :search="search" :status-filter="statusFilter" @new-project="openCreate" @update:page="page = $event"
+          @update:search="search = $event" @update:status-filter="statusFilter = $event" @select="onSelectProject"
+          @edit="openEdit" />
       </main>
     </div>
   </div>
 
-  <NewProjectModal v-model:show="showNewProjectModal" @saved="onProjectSaved" />
+  <!-- Unified create/edit modal -->
+  <ProjectFormModal v-model:show="showModal" :editing="editingProject" @saved="onSaved" />
 </template>
