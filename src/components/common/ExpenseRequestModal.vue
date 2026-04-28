@@ -124,7 +124,7 @@ function formatAmount(n: number) {
                         accept=".pdf,.doc,.docx,.xls,.xlsx" class="upload-full" @change="d => stagedDocs = d.fileList">
                         <div class="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border border-dashed cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50"
                             style="border-color:#D3D1C7;text-align:center">
-                            <Icon icon="lucide:paperclip" style="width:18px;height:18px;color:#B4B2A9" />
+
                             <div class="text-[10px] text-gray-300">PDF, Word, Excel</div>
                         </div>
                     </NUpload>
@@ -135,7 +135,7 @@ function formatAmount(n: number) {
                         class="upload-full" @change="d => stagedPhotos = d.fileList">
                         <div class="flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl border border-dashed cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50"
                             style="border-color:#D3D1C7;text-align:center">
-                            <Icon icon="lucide:image" style="width:18px;height:18px;color:#B4B2A9" />
+
                             <div class="text-[10px] text-gray-300">JPG, PNG</div>
                         </div>
                     </NUpload>

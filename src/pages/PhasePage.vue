@@ -64,11 +64,20 @@ async function onCheckpointSaved(
     files: File[],
 ) {
     try {
-        await checkpointService.update(id, payload)
+        await checkpointService.update(
+            project.value!.id,
+            activeCP.value!.phase_id,
+            id,
+            payload
+        )
 
-        // Upload photos if any
         if (files.length) {
-            // await checkpointService.uploadImages(id, files)
+            await checkpointService.uploadImages(
+                project.value!.id,
+                activeCP.value!.phase_id,
+                id,
+                files
+            )
         }
 
         message.success('อัปเดต Checkpoint เรียบร้อย')
@@ -122,8 +131,10 @@ async function onCheckpointSaved(
     </div>
 
     <!-- Update modal -->
-    <CheckpointUpdateModal v-model:show="showUpdate" :checkpoint="activeCP" @saved="onCheckpointSaved" />
+    <CheckpointUpdateModal v-model:show="showUpdate" :checkpoint="activeCP" :project-id="project?.id ?? ''"
+        :phase-id="activeCP?.phase_id ?? ''" @saved="onCheckpointSaved" />
 
     <!-- Detail modal -->
-    <CheckpointDetailModal v-model:show="showDetail" :checkpoint="activeCP" @edit="openUpdate" />
+    <CheckpointDetailModal v-model:show="showDetail" :checkpoint="activeCP" :project-id="project?.id ?? ''"
+        :phase-id="activeCP?.phase_id ?? ''" @edit="openUpdate" />
 </template>

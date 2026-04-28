@@ -29,43 +29,39 @@ const mainMenu = [
 ]
 
 const projectMenu = [
-    { label: 'Projects', path: '/project', icon: 'mdi:briefcase-outline' },
+    { label: 'Projects', path: 'detail', icon: 'mdi:briefcase-outline' },
     { label: 'Phase', path: 'phase', icon: 'mdi:format-list-checks' },
     { label: 'Daily Update', path: 'daily', icon: 'mdi:file-document-outline' },
-    { label: 'Timeline', path: 'timeline', icon: 'mdi:clock-outline' },
     { label: 'Budget', path: 'budget', icon: 'mdi:currency-usd' },
 ]
 
-/**
- * Active check:
- * - 'Projects' item → active when path is exactly /project or starts with /project/ (detail page)
- * - Sub-items (phase, daily…) → active when path ends with that segment
- */
+
 function isActive(item: { path: string }) {
     const p = route.path
 
-    if (item.path === '/project') {
-        // Active for /project AND /project/:id (detail) but NOT /project/:id/phase etc.
-        return p === '/project' ||
-            (/^\/project\/[^/]+$/.test(p))
+    if (item.path === 'detail') {
+        return /^\/project\/[^/]+$/.test(p)
     }
 
-    // Sub-items: match suffix  e.g. "phase" → /project/:id/phase
-    return p === item.path || p.endsWith(`/${item.path}`)
+    return p.endsWith(`/${item.path}`)
 }
 
-/** Navigate: sub-items try to preserve current project id */
 function go(path: string) {
     if (path.startsWith('/')) {
         router.push(path)
         return
     }
-    // path is a sub-segment like 'phase' — prepend current project id if available
+
     const match = route.path.match(/^\/project\/([^/]+)/)
     if (match) {
-        router.push(`/project/${match[1]}/${path}`)
+        const projectId = match[1]
+        if (path === 'detail') {
+            router.push(`/project/${projectId}`)
+        } else {
+            router.push(`/project/${projectId}/${path}`)
+        }
     } else {
-        router.push(`/project/${path}`)
+        router.push(`/project`)
     }
 }
 

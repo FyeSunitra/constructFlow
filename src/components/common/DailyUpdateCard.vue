@@ -5,6 +5,7 @@ export default { name: 'DailyUpdateCard' }
 <script setup lang="ts">
 import { NImage, NImageGroup } from 'naive-ui'
 import { Icon } from '@iconify/vue'
+import { computed } from 'vue'
 
 export interface DailyUpdateItem {
     id: string
@@ -13,7 +14,7 @@ export interface DailyUpdateItem {
     engineer: { id: string; first_name: string; last_name: string }
     work_done: string
     issues: string
-    image_url: string | null
+    images: { id: string; url: string }[]
     created_at: string
 }
 
@@ -24,9 +25,13 @@ const props = defineProps<{
     avatarFg: string
 }>()
 
-function initials() {
-    return `${props.update.engineer.first_name[0]}${props.update.engineer.last_name[0]}`.toUpperCase()
-}
+const initials = computed(() => {
+    if (!props.update.engineer) return '?'
+    const f = props.update.engineer.first_name?.[0] ?? ''
+    const l = props.update.engineer.last_name?.[0] ?? ''
+    return (f + l).toUpperCase() || '?'
+})
+
 </script>
 
 <template>
@@ -36,7 +41,7 @@ function initials() {
         <div class="flex items-center gap-2.5 mb-3">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                 :style="{ background: avatarBg, color: avatarFg }">
-                {{ initials() }}
+                {{ initials }}
             </div>
             <div class="flex-1 min-w-0">
                 <div class="text-sm font-medium text-gray-800">
@@ -63,11 +68,11 @@ function initials() {
         </div>
 
         <!-- Photos -->
-        <div v-if="update.image_url" class="mt-3">
+        <div v-if="update.images?.length" class="mt-3">
             <NImageGroup>
                 <div class="flex gap-2 flex-wrap">
-                    <NImage :src="update.image_url" width="80" height="60" object-fit="cover"
-                        class="rounded-lg overflow-hidden cursor-pointer" />
+                    <NImage v-for="img in update.images" :key="img.id" :src="img.url" width="80" height="60"
+                        object-fit="cover" class="rounded-lg overflow-hidden cursor-pointer" />
                 </div>
             </NImageGroup>
         </div>

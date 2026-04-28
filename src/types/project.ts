@@ -60,6 +60,7 @@ export interface ProjectDetail {
   created_at: string
   phases: ProjectPhase[]
   assignments: ProjectAssignment[]
+  documents: ProjectDocument[]
   progress_percentage: number
 }
 
@@ -125,7 +126,17 @@ export interface ProjectForm {
   start_date: string
   end_date: string
   owner_name: string
+  total_budget: number
   phases: PhaseDraft[]
   assignments: string[]
   _files: File[]
+}
+
+export interface ProjectDocument {
+  id: string
+  project_id: string
+  name: string
+  url: string
+  is_active: boolean
+  created_at: string
 }

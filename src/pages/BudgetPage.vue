@@ -14,63 +14,28 @@ import ExpenseDetailModal from '@/components/common/ExpenseDetailModal.vue'
 import ExpenseRequestModal from '@/components/common/ExpenseRequestModal.vue'
 import { EXPENSE_STATUS_META, type ExpenseRequest, type ExpenseStatus } from '@/types/expense'
 import { type ProjectDetail, type ProjectPhase } from '@/types/project'
-
-// ─── State ────────────────────────────────────────────────────────────────────
+import { expenseService } from '@/services/expense.service'
 
 const route = useRoute()
 const message = useMessage()
 const auth = useAuthStore()
 
 const isCEO = computed(() => auth.user?.role === 'CEO')
+const projectId = computed(() => route.params.id as string)
 
 const project = ref<ProjectDetail | null>(null)
 const loadingProject = ref(false)
+const expenses = ref<ExpenseRequest[]>([])
+const loadingExpenses = ref(false)
 const openPhases = ref<Set<string>>(new Set())
 
-// modals
 const showDetail = ref(false)
 const showRequest = ref(false)
 const activeExpense = ref<ExpenseRequest | null>(null)
 const activePhase = ref<ProjectPhase | null>(null)
 
-// ─── Mock expense data ────────────────────────────────────────────────────────
-
-const MOCK_EXPENSES: Record<string, ExpenseRequest[]> = {
-    'phase-1': [
-        {
-            id: 'e1', project_id: 'p1', phase_id: 'phase-1',
-            requester_id: 'u1',
-            requester: { id: 'u1', first_name: 'สมชาย', last_name: 'ใจดี' },
-            amount: 1200000, description: 'งาน Preparation Phase เสร็จ 2 Checkpoint ทั้งหมดเสร็จตามแผนและผ่านมาตรฐาน',
-            status: 'APPROVED',
-            approved_by: 'ceo1', approved_at: '2025-01-14T00:00:00Z',
-            rejected_by: null, rejected_at: null, reviewer_note: null,
-            created_at: '2025-01-12T00:00:00Z',
-            documents: [
-                { name: 'receipt_excavation.pdf', size: '250KB' },
-                { name: 'receipt_rebar.pdf', size: '180KB' },
-            ],
-        },
-    ],
-    'phase-2': [
-        {
-            id: 'e2', project_id: 'p1', phase_id: 'phase-2',
-            requester_id: 'u1',
-            requester: { id: 'u1', first_name: 'สมชาย', last_name: 'ใจดี' },
-            amount: 3800000, description: 'ขึ้นรายงานค่าใช้จ่าย Foundation phase',
-            status: 'PENDING',
-            approved_by: null, approved_at: null,
-            rejected_by: null, rejected_at: null, reviewer_note: null,
-            created_at: '2025-02-09T00:00:00Z',
-            documents: [],
-        },
-    ],
-}
-
-// ─── Fetch project ────────────────────────────────────────────────────────────
-
 async function fetchProject() {
-    const id = route.params.id as string
+    const id = projectId.value
     if (!id) return
     loadingProject.value = true
     try {
@@ -78,7 +43,6 @@ async function fetchProject() {
         project.value = (res as any)?.data ?? res as ProjectDetail
         if (project.value) {
             route.meta.projectName = project.value.name
-            // auto-open completed phases
             project.value.phases.forEach(p => {
                 if (p.status === 'COMPLETED') openPhases.value.add(p.id)
             })
@@ -87,7 +51,19 @@ async function fetchProject() {
     finally { loadingProject.value = false }
 }
 
-onMounted(fetchProject)
+async function fetchExpenses() {
+    loadingExpenses.value = true
+    try {
+        const res = await expenseService.getAll(projectId.value)
+        expenses.value = (res as any)?.data ?? res
+    } catch { message.error('โหลดข้อมูลการเบิกจ่ายไม่สำเร็จ') }
+    finally { loadingExpenses.value = false }
+}
+
+onMounted(() => {
+    fetchProject()
+    fetchExpenses()
+})
 
 // ─── Budget stats ─────────────────────────────────────────────────────────────
 
@@ -95,16 +71,12 @@ const totalBudget = computed(() =>
     project.value?.phases.reduce((s, p) => s + Number(p.budget_estimate ?? 0), 0) ?? 0,
 )
 
-const allExpenses = computed(() =>
-    Object.values(MOCK_EXPENSES).flat(),
-)
-
 const paidAmount = computed(() =>
-    allExpenses.value.filter(e => e.status === 'APPROVED').reduce((s, e) => s + e.amount, 0),
+    expenses.value.filter(e => e.status === 'APPROVED').reduce((s, e) => s + Number(e.amount), 0),
 )
 
 const pendingAmount = computed(() =>
-    allExpenses.value.filter(e => e.status === 'PENDING').reduce((s, e) => s + e.amount, 0),
+    expenses.value.filter(e => e.status === 'PENDING').reduce((s, e) => s + Number(e.amount), 0),
 )
 
 const remaining = computed(() => totalBudget.value - paidAmount.value - pendingAmount.value)
@@ -117,11 +89,7 @@ function togglePhase(id: string) {
 }
 
 function phaseExpenses(phaseId: string): ExpenseRequest[] {
-    return MOCK_EXPENSES[phaseId] ?? []
-}
-
-function canRequest(phase: ProjectPhase): boolean {
-    return phase.status === 'COMPLETED'
+    return expenses.value.filter(e => e.phase_id === phaseId)
 }
 
 function phaseStyle(phase: ProjectPhase) {
@@ -153,8 +121,6 @@ function formatDate(iso: string | null) {
     return new Date(iso).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-// ─── Modal openers ────────────────────────────────────────────────────────────
-
 function openDetail(expense: ExpenseRequest) {
     activeExpense.value = expense
     showDetail.value = true
@@ -170,9 +136,40 @@ async function onRequestSaved(
     docs: File[],
     photos: File[],
 ) {
+    if (!activePhase.value) return
     try {
-        // TODO: await expenseService.create(projectId, phaseId, payload, docs, photos)
+        const res = await expenseService.create(projectId.value, {
+            phase_id: activePhase.value.id,
+            amount: payload.amount,
+            description: payload.description,
+        })
+        const reqId = (res as any)?.id as string
+
+        if (reqId) {
+            if (photos.length) await expenseService.uploadImages(projectId.value, reqId, photos)
+            if (docs.length) await expenseService.uploadDocuments(projectId.value, reqId, docs)
+        }
+
         message.success('ยื่นคำขอเบิกจ่ายเรียบร้อย')
+        await fetchExpenses()
+    } catch { message.error('เกิดข้อผิดพลาด') }
+}
+
+async function onApprove(reqId: string) {
+    try {
+        await expenseService.approve(projectId.value, reqId)
+        message.success('อนุมัติเรียบร้อย')
+        showDetail.value = false
+        await fetchExpenses()
+    } catch { message.error('เกิดข้อผิดพลาด') }
+}
+
+async function onReject(reqId: string, note?: string) {
+    try {
+        await expenseService.reject(projectId.value, reqId, note)
+        message.success('ปฏิเสธเรียบร้อย')
+        showDetail.value = false
+        await fetchExpenses()
     } catch { message.error('เกิดข้อผิดพลาด') }
 }
 </script>
@@ -188,7 +185,6 @@ async function onRequestSaved(
 
             <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
 
-                <!-- Loading -->
                 <template v-if="loadingProject">
                     <div class="h-44 rounded-2xl animate-pulse" style="background:#F1EFE8" />
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -197,8 +193,6 @@ async function onRequestSaved(
                 </template>
 
                 <template v-else-if="project">
-
-                    <!-- Project card -->
                     <ProjectDetailCard :project="project" />
 
                     <!-- Stat cards -->
@@ -225,6 +219,7 @@ async function onRequestSaved(
                     <div class="flex flex-col gap-3">
                         <div v-for="phase in project.phases" :key="phase.id" class="rounded-xl overflow-hidden"
                             :style="{ border: `0.5px solid ${phaseStyle(phase).border}` }">
+
                             <!-- Phase header -->
                             <div class="flex items-center gap-3 px-4 py-3.5 cursor-pointer select-none"
                                 :style="{ background: phaseStyle(phase).header }" @click="togglePhase(phase.id)">
@@ -253,55 +248,57 @@ async function onRequestSaved(
                             <!-- Phase body -->
                             <div v-if="openPhases.has(phase.id)" class="bg-white p-4 flex flex-col gap-3">
 
-                                <!-- Cannot request yet -->
-                                <div v-if="!canRequest(phase)" class="rounded-xl p-4 text-sm text-center"
+                                <div v-if="phase.status !== 'COMPLETED'" class="rounded-xl p-4 text-sm text-center"
                                     style="background:#F7F6F2;color:#B4B2A9">
                                     ยังไม่สามารถเบิกได้ — Phase ยังไม่เสร็จสิ้น
                                 </div>
 
-                                <!-- Expense requests list -->
                                 <template v-else>
-                                    <div v-for="expense in phaseExpenses(phase.id)" :key="expense.id"
-                                        class="flex items-center gap-3 rounded-xl px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50"
-                                        style="border:0.5px solid #E3E1D8" @click="openDetail(expense)">
-                                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                                            style="background:#E1F5EE">
-                                            <Icon icon="lucide:receipt" style="width:14px;height:14px;color:#0F6E56" />
+                                    <!-- Expense list -->
+                                    <div v-if="loadingExpenses" class="h-12 rounded-xl animate-pulse"
+                                        style="background:#F1EFE8" />
+
+                                    <template v-else>
+                                        <div v-for="expense in phaseExpenses(phase.id)" :key="expense.id"
+                                            class="flex items-center gap-3 rounded-xl px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50"
+                                            style="border:0.5px solid #E3E1D8" @click="openDetail(expense)">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                                                style="background:#E1F5EE">
+                                                <Icon icon="lucide:receipt"
+                                                    style="width:14px;height:14px;color:#0F6E56" />
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-sm font-medium text-gray-800">
+                                                    {{ expense.requester?.first_name }} {{ expense.requester?.last_name
+                                                    }}
+                                                </div>
+                                                <div class="text-xs text-gray-400 mt-0.5">
+                                                    {{ formatDate(expense.created_at) }} · ฿{{
+                                                        formatAmount(Number(expense.amount)) }}
+                                                </div>
+                                            </div>
+                                            <span
+                                                class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-semibold"
+                                                :style="{
+                                                    background: EXPENSE_STATUS_META[expense.status as ExpenseStatus].bg,
+                                                    color: EXPENSE_STATUS_META[expense.status as ExpenseStatus].color,
+                                                }">
+                                                {{ EXPENSE_STATUS_META[expense.status as ExpenseStatus].label }}
+                                            </span>
+                                            <Icon icon="lucide:chevron-right"
+                                                style="width:14px;height:14px;color:#D3D1C7;flex-shrink:0" />
                                         </div>
 
-                                        <div class="flex-1 min-w-0">
-                                            <div class="text-sm font-medium text-gray-800">
-                                                {{ expense.requester.first_name }} {{ expense.requester.last_name }}
-                                            </div>
-                                            <div class="text-xs text-gray-400 mt-0.5">
-                                                {{ formatDate(expense.created_at) }} · ฿{{ formatAmount(expense.amount)
-                                                }}
-                                            </div>
+                                        <div v-if="!phaseExpenses(phase.id).length"
+                                            class="rounded-xl p-4 text-sm text-center"
+                                            style="background:#F7F6F2;color:#B4B2A9">
+                                            ยังไม่มีรายการเบิกจ่าย
                                         </div>
+                                    </template>
 
-                                        <span
-                                            class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-semibold"
-                                            :style="{
-                                                background: EXPENSE_STATUS_META[expense.status as ExpenseStatus].bg,
-                                                color: EXPENSE_STATUS_META[expense.status as ExpenseStatus].color,
-                                            }">
-                                            {{ EXPENSE_STATUS_META[expense.status as ExpenseStatus].label }}
-                                        </span>
-
-                                        <Icon icon="lucide:chevron-right"
-                                            style="width:14px;height:14px;color:#D3D1C7;flex-shrink:0" />
-                                    </div>
-
-                                    <!-- No requests yet -->
-                                    <div v-if="!phaseExpenses(phase.id).length"
-                                        class="rounded-xl p-4 text-sm text-center"
-                                        style="background:#F7F6F2;color:#B4B2A9">
-                                        ยังไม่มีรายการเบิกจ่าย
-                                    </div>
-
-                                    <!-- Request button -->
-                                    <NButton dashed class="w-full" style="border-color:#9FE1CB;color:#0F6E56"
-                                        @click.stop="openRequest(phase)">
+                                    <!-- Request button (engineer only) -->
+                                    <NButton v-if="!isCEO" dashed class="w-full"
+                                        style="border-color:#9FE1CB;color:#0F6E56" @click.stop="openRequest(phase)">
                                         <template #icon>
                                             <Icon icon="lucide:plus" style="width:14px;height:14px" />
                                         </template>
@@ -313,20 +310,15 @@ async function onRequestSaved(
                     </div>
                 </template>
 
-                <!-- Not found -->
-                <div v-else class="py-16 text-center text-gray-300 text-sm">
-                    ไม่พบข้อมูลโปรเจ็ค
-                </div>
-
+                <div v-else class="py-16 text-center text-gray-300 text-sm">ไม่พบข้อมูลโปรเจ็ค</div>
             </main>
         </div>
     </div>
 
-    <!-- Expense detail modal -->
     <ExpenseDetailModal v-model:show="showDetail" :expense="activeExpense"
-        :phase-name="activePhase?.name ?? activeExpense?.phase_id ?? ''" :project-name="project?.name ?? ''" />
+        :phase-name="activeExpense?.phase?.name ?? activePhase?.name ?? ''" :project-name="project?.name ?? ''"
+        :is-c-e-o="isCEO" @approve="onApprove" @reject="onReject" />
 
-    <!-- Expense request modal -->
     <ExpenseRequestModal v-model:show="showRequest" :phase-name="activePhase?.name ?? ''"
         :project-name="project?.name ?? ''" :phase-date="formatDate(activePhase?.end_date ?? null)"
         :phase-budget="Number(activePhase?.budget_estimate ?? 0)" @saved="onRequestSaved" />

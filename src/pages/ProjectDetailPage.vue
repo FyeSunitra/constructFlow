@@ -76,8 +76,9 @@ onMounted(fetchProject)
                         </button>
                     </div>
 
-                    <ProjectOverviewTab v-if="activeTab === 'overview'" :phases="project.phases" />
-                    <ProjectDocumentsTab v-else-if="activeTab === 'documents'" />
+                    <ProjectOverviewTab v-if="activeTab === 'overview'" :phases="project.phases"
+                        :project-id="project.id" />
+                    <ProjectDocumentsTab v-if="activeTab === 'documents'" :documents="project.documents ?? []" />
                 </template>
 
                 <div v-else class="py-16 text-center text-gray-300 text-sm">

@@ -25,6 +25,16 @@ export const projectService = {
     return http.post('/projects', payload)
   },
 
+  async uploadDocuments(projectId: string, files: File[]) {
+    const fd = new FormData()
+    files.forEach(f => fd.append('files', f))
+    return http.post(`/projects/${projectId}/documents/upload`, fd, true)
+  },
+
+  async removeDocument(projectId: string, docId: string) {
+    return http.del(`/projects/${projectId}/documents/${docId}`)
+  },
+
   async update(id: string, payload: Partial<CreateProjectPayload>) {
     return http.patch(`/projects/${id}`, payload)
   },
@@ -32,13 +42,4 @@ export const projectService = {
   async remove(id: string) {
     return http.del(`/projects/${id}`)
   },
-
-  /** Upload documents after project is created — call when API is ready */
-  //   async uploadDocuments(projectId: string, files: File[]) {
-  //     const fd = new FormData()
-  //     files.forEach(f => fd.append('files', f))
-  //     return http.post(`/projects/${projectId}/documents`, fd, {
-  //       headers: { 'Content-Type': 'multipart/form-data' },
-  //     })
-  //   },
 }

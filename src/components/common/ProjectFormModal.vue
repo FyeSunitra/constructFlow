@@ -7,6 +7,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import {
     NModal, NForm, NFormItem, NInput, NSelect,
     NDatePicker, NButton, NDivider, NUpload,
+    NInputNumber,
     type FormInst, type FormRules, type UploadFileInfo,
     useMessage,
 } from 'naive-ui'
@@ -16,7 +17,7 @@ import { templateService } from '@/services/template.service'
 import { userService } from '@/services/user.service'
 import { projectService } from '@/services/project.service'
 import type { Template } from '@/types/template'
-import type { Project, PhaseDraft, ProjectForm } from '@/types/project'
+import type { Project, PhaseDraft, ProjectForm, ProjectDocument } from '@/types/project'
 import { buildProjectPayload, emptyProjectForm } from '@/lib/project'
 import ProjectPhaseEditor from '@/components/common/ProjectPhaseEditor.vue'
 
@@ -46,10 +47,11 @@ const stagedFiles = ref<UploadFileInfo[]>([])
 
 const isEdit = computed(() => props.editing !== null)
 const modalTitle = computed(() => isEdit.value ? 'แก้ไขโครงการ' : 'สร้างโครงการใหม่')
+const existingDocs = ref<ProjectDocument[]>([])
 
 watch(() => props.show, async (visible) => {
     if (!visible) return
-
+    existingDocs.value = []
     Object.assign(form, emptyProjectForm())
     stagedFiles.value = []
     formRef.value?.restoreValidation()
@@ -76,7 +78,8 @@ watch(() => props.show, async (visible) => {
             form.end_date = d.end_date ? d.end_date.split('T')[0] : ''
             form.template_id = d.template_id ?? ''
             form.assignments = (d.assignments ?? []).map((a: any) => a.engineer_id)
-
+            form.total_budget = d.phases?.reduce((s: number, p: any) =>
+                s + Number(p.budget_estimate ?? 0), 0) ?? 0
             form.phases = (d.phases ?? [])
                 .slice()
                 .sort((a: any, b: any) => a.order_index - b.order_index)
@@ -91,6 +94,7 @@ watch(() => props.show, async (visible) => {
                         .sort((a: any, b: any) => a.order_index - b.order_index)
                         .map((c: any) => ({ name: c.name })),
                 }))
+            existingDocs.value = d.documents ?? []
         }
     } catch {
         message.error('โหลดข้อมูลไม่สำเร็จ')
@@ -183,22 +187,35 @@ const rules: FormRules = {
     end_date: [{ required: true, trigger: 'change', message: 'กรุณาเลือกวันสิ้นสุด', type: 'any' }],
 }
 
+const totalPhaseBudget = computed(() =>
+    form.phases.reduce((s, p) => s + Number(p.budget_estimate ?? 0), 0),
+)
+
+const isBudgetExceeded = computed(() =>
+    form.total_budget > 0 && totalPhaseBudget.value > form.total_budget
+)
+
 async function handleSubmit() {
     try { await formRef.value?.validate() } catch { return }
     saving.value = true
     try {
         const payload = buildProjectPayload(form)
+        let projectId: string
+
         if (isEdit.value && props.editing) {
             await projectService.update(props.editing.id, payload)
+            projectId = props.editing.id
             message.success('บันทึกโครงการเรียบร้อย')
         } else {
             const res = await projectService.create(payload)
-            const projectId = (res as any)?.data?.id as string | undefined
-            if (form._files.length && projectId) {
-                // await projectService.uploadDocuments(projectId, form._files)
-            }
+            projectId = (res as any)?.id as string
             message.success('สร้างโครงการสำเร็จ')
         }
+
+        if (form._files.length && projectId) {
+            await projectService.uploadDocuments(projectId, form._files)
+        }
+
         emit('saved')
         emit('update:show', false)
     } catch (err) {
@@ -207,6 +224,11 @@ async function handleSubmit() {
     } finally {
         saving.value = false
     }
+}
+
+async function removeExistingDoc(docId: string) {
+    existingDocs.value = existingDocs.value.filter(d => d.id !== docId)
+    await projectService.removeDocument(props.editing!.id, docId)
 }
 
 function close() { emit('update:show', false) }
@@ -246,10 +268,8 @@ const modalStyle = computed(() =>
                     <NInput v-model:value="form.owner_name" placeholder="ชื่อหน่วยงาน / เจ้าของ" />
                 </NFormItem>
                 <NFormItem label="งบประมาณรวม (บาท)">
-                    <div class="w-full h-9 flex items-center px-3 rounded-lg text-sm"
-                        style="background:#F7F6F2;border:0.5px solid #E3E1D8;color:#5F5E5A">
-                        {{ totalBudget.toLocaleString('th-TH') }}
-                    </div>
+                    <NInputNumber v-model:value="form.total_budget" :min="0" :show-button="false" placeholder="0"
+                        style="width:100%" />
                 </NFormItem>
             </div>
 
@@ -283,6 +303,21 @@ const modalStyle = computed(() =>
                     placeholder="เลือกแม่แบบโครงการ (ถ้ามี)" clearable />
             </NFormItem>
 
+            <div v-if="form.total_budget > 0" class="rounded-xl px-4 py-2.5 flex items-center justify-between mb-2"
+                :style="isBudgetExceeded
+                    ? 'background:#FCEBEB;border:0.5px solid #F5C6C6'
+                    : 'background:#F7F6F2;border:0.5px solid #E3E1D8'">
+                <span class="text-xs" :style="isBudgetExceeded ? 'color:#A32D2D' : 'color:#888780'">
+                    งบ Phase รวม: ฿{{ totalPhaseBudget.toLocaleString('th-TH') }}
+                    / ฿{{ form.total_budget.toLocaleString('th-TH') }}
+                </span>
+                <span v-if="isBudgetExceeded" class="text-xs font-semibold" style="color:#A32D2D">
+                    เกินงบ ฿{{ (totalPhaseBudget - form.total_budget).toLocaleString('th-TH') }}
+                </span>
+                <span v-else class="text-xs font-semibold" style="color:#0F6E56">
+                    คงเหลือ ฿{{ (form.total_budget - totalPhaseBudget).toLocaleString('th-TH') }}
+                </span>
+            </div>
             <!-- Phases -->
             <template v-if="form.phases.length > 0">
                 <div class="text-sm font-semibold uppercase tracking-wider mb-3 pb-2"
@@ -306,20 +341,34 @@ const modalStyle = computed(() =>
                 </button>
             </template>
 
-            <!-- เอกสารแนบ (create only) -->
-            <template v-if="!isEdit">
-                <NDivider style="margin:16px 0 12px" />
-                <div class="text-sm font-semibold uppercase tracking-wider mb-3 pb-2"
-                    style="border-bottom:0.5px solid #F1EFE8">เอกสารแนบ</div>
-                <NUpload multiple :file-list="stagedFiles" :default-upload="false"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" class="upload-full" @change="handleFileChange">
-                    <div class="flex flex-col items-center justify-center gap-2 py-5 rounded-xl border border-dashed cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50"
-                        style="width:100%;border-color:#D3D1C7;text-align:center">
-                        <div class="text-xs text-gray-400">คลิกหรือลากไฟล์มาวางที่นี่</div>
-                        <div class="text-xs text-gray-300">PDF, Word, Excel, รูปภาพ</div>
-                    </div>
-                </NUpload>
-            </template>
+
+            <!-- เอกสารแนบ — เปิดให้ทั้ง create และ edit -->
+            <NDivider style="margin:16px 0 12px" />
+            <div class="text-sm font-semibold uppercase tracking-wider mb-3 pb-2"
+                style="border-bottom:0.5px solid #F1EFE8">
+                เอกสารแนบ</div>
+
+            <!-- แสดงเอกสารเดิม (edit mode) -->
+            <div v-if="existingDocs.length" class="flex flex-col gap-1.5 mb-3">
+                <div v-for="doc in existingDocs" :key="doc.id" class="flex items-center gap-2.5 rounded-lg px-3 py-2"
+                    style="background:#F7F6F2;border:0.5px solid #E3E1D8">
+                    <Icon icon="lucide:file-text" style="width:13px;height:13px;color:#888780;flex-shrink:0" />
+                    <span class="flex-1 text-xs text-gray-600 truncate">{{ doc.name }}</span>
+                    <button class="text-xs text-red-400 hover:text-red-600" @click="removeExistingDoc(doc.id)">
+                        <Icon icon="lucide:x" style="width:13px;height:13px" />
+                    </button>
+                </div>
+            </div>
+
+            <NUpload multiple :file-list="stagedFiles" :default-upload="false"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" class="upload-full" @change="handleFileChange">
+                <div class="flex flex-col items-center justify-center gap-2 py-5 rounded-xl border border-dashed cursor-pointer transition-all hover:border-emerald-400 hover:bg-emerald-50"
+                    style="width:100%;border-color:#D3D1C7;text-align:center">
+                    <div class="text-xs text-gray-400">คลิกหรือลากไฟล์มาวางที่นี่</div>
+                    <div class="text-xs text-gray-300">PDF, Word, Excel, รูปภาพ</div>
+                </div>
+            </NUpload>
+
         </NForm>
 
         <template #footer>

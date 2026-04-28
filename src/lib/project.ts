@@ -8,6 +8,7 @@ export function emptyProjectForm(): ProjectForm {
     start_date: '',
     end_date: '',
     owner_name: '',
+    total_budget: 0,
     phases: [] as PhaseDraft[],
     assignments: [] as string[],
     _files: [] as File[],

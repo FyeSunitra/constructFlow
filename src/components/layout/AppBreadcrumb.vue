@@ -18,7 +18,6 @@ const routeLabels: Record<string, string> = {
     '/project': 'Projects',
     '/project/phase': 'Phase',
     '/project/daily': 'Daily Update',
-    '/project/timeline': 'Timeline',
     '/project/budget': 'Budget',
 }
 

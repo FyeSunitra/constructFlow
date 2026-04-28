@@ -7,7 +7,7 @@ export interface ExpenseRequest {
     requester_id: string
     requester: { id: string; first_name: string; last_name: string }
     amount: number
-    description: string
+    description: string | null
     status: ExpenseStatus
     approved_by: string | null
     approved_at: string | null
@@ -15,8 +15,15 @@ export interface ExpenseRequest {
     rejected_at: string | null
     reviewer_note: string | null
     created_at: string
-    // attachments — handled separately (mock)
-    documents: { name: string; size: string }[]
+    phase?: { id: string; name: string }
+    images?: { id: string; url: string }[]
+    documents?: { name: string; size: string }[]
+}
+
+export interface CreateExpensePayload {
+    phase_id: string
+    amount: number
+    description?: string
 }
 
 export const EXPENSE_STATUS_META: Record<ExpenseStatus, { label: string; color: string; bg: string }> = {
