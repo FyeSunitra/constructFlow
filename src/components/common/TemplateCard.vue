@@ -4,7 +4,7 @@ export default { name: 'TemplateCard' }
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton, NPopconfirm, NTooltip } from 'naive-ui'
+import { NPopconfirm } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import type { Template } from '@/types/template';
 import { totalBudget, totalCheckpoints } from '@/lib/template';
@@ -14,6 +14,7 @@ const props = defineProps<{ template: Template }>()
 const emit = defineEmits<{
     edit: [template: Template]
     delete: [template: Template]
+    view: [template: Template]
 }>()
 
 const cpCount = computed(() => totalCheckpoints(props.template))
@@ -23,8 +24,8 @@ const budgetTotal = computed(() =>
 </script>
 
 <template>
-    <div class="bg-white rounded-xl flex flex-col gap-3 p-4 transition-colors duration-150 hover:border-emerald-500"
-        style="border:0.5px solid #E3E1D8">
+    <div class="bg-white rounded-xl flex flex-col gap-3 p-4 transition-all duration-150 hover:border-emerald-500 hover:shadow-sm cursor-pointer"
+        style="border:0.5px solid #E3E1D8" @click="emit('view', template)">
         <!-- Name -->
         <div>
             <div class="text-sm font-medium text-gray-800 leading-snug">{{ template.name }}</div>
@@ -70,7 +71,7 @@ const budgetTotal = computed(() =>
         </div>
 
         <!-- Actions -->
-        <div class="flex items-center gap-2 pt-2" style="border-top:0.5px solid #F1EFE8;margin-top:auto">
+        <div class="flex items-center gap-2 pt-2" style="border-top:0.5px solid #F1EFE8;margin-top:auto" @click.stop>
             <button
                 class="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-xs font-medium text-gray-500 bg-white border transition-all duration-150 hover:border-emerald-500 hover:text-emerald-700"
                 style="border:0.5px solid #E3E1D8" @click="emit('edit', template)">
