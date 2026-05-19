@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
-import { NInput, NButton } from 'naive-ui'
+import { NInput, NButton, useMessage } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth.store'
 
 const router = useRouter()
 const auth = useAuthStore()
+const message = useMessage()
 
 const username = ref('')
 const password = ref('')
@@ -23,8 +24,9 @@ const handleLogin = async () => {
         })
         await nextTick()
         router.push('/dashboard')
-    } catch (err) {
+    } catch (err: any) {
         console.error(err)
+        message.error(err?.response?.data?.message || 'Username หรือ Password ไม่ถูกต้อง')
     } finally {
         loading.value = false
     }
@@ -58,7 +60,7 @@ const handleLogin = async () => {
                         Log in
                     </h2>
                 </div>
-                <div class="space-y-5">
+                <form class="space-y-5" @submit.prevent="handleLogin">
                     <n-input v-model:value="username" placeholder="Username" size="large"
                         class="shadow-md rounded-xl" />
                     <div class="relative">
@@ -70,11 +72,12 @@ const handleLogin = async () => {
                             <Icon :icon="showPassword ? 'mdi:eye-off-outline' : 'mdi:eye-outline'" width="20" />
                         </span>
                     </div>
-                    <n-button block size="large" class="rounded-xl shadow-md"
-                        style="background-color: var(--primary); color: white;" @click="handleLogin">
+                    <n-button attr-type="submit" block size="large" class="rounded-xl shadow-md"
+                        style="background-color: var(--primary); color: white;" 
+                        :loading="loading" :disabled="loading">
                         Sign in
                     </n-button>
-                </div>
+                </form>
             </div>
 
         </div>

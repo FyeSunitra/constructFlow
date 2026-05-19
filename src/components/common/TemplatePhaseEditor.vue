@@ -43,7 +43,7 @@ function removeCheckpoint(i: number) {
 
         <!-- Phase header -->
         <div class="flex items-center gap-2 px-3 py-2.5" style="background:#F7F6F2;border-bottom:0.5px solid #E3E1D8">
-            <span class="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded"
+            <span class="flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded"
                 style="background:#E1F5EE;color:#0F6E56">
                 Phase {{ index + 1 }}
             </span>
@@ -74,13 +74,13 @@ function removeCheckpoint(i: number) {
 
             <!-- Checkpoints -->
             <div>
-                <div class="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">
+                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                     Checkpoints
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <div v-for="(cp, ci) in phase.checkpoints" :key="ci" class="flex items-center gap-2">
-                        <span class="text-[10px] text-gray-300 w-4 text-right flex-shrink-0">{{ ci + 1 }}</span>
+                        <span class="text-xs text-gray-300 w-4 text-right flex-shrink-0">{{ ci + 1 }}</span>
                         <NInput :value="cp.name" size="small" placeholder="ชื่อ Checkpoint" class="flex-1"
                             @update:value="updateCheckpoint(ci, $event)" />
                         <NButton quaternary circle size="tiny" :disabled="phase.checkpoints.length === 1"

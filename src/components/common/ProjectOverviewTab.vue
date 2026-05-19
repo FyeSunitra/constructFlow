@@ -76,17 +76,17 @@ function formatDateShort(iso: string) {
         <!-- Stat tiles -->
         <div class="grid grid-cols-3 gap-3">
             <div class="bg-white rounded-xl p-4" style="border:0.5px solid #E3E1D8">
-                <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Phase ปัจจุบัน</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Phase ปัจจุบัน</div>
                 <div class="text-sm font-semibold truncate" style="color:#0F6E56">
                     {{ currentPhase?.name ?? '—' }}
                 </div>
-                <div class="text-[10px] text-gray-400 mt-1">
+                <div class="text-xs text-gray-400 mt-1">
                     Phase {{ currentPhaseIdx }} จาก {{ phases.length }}
                 </div>
             </div>
 
             <div class="bg-white rounded-xl p-4" style="border:0.5px solid #E3E1D8">
-                <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Checkpoint สำเร็จ</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Checkpoint สำเร็จ</div>
                 <div class="text-sm font-semibold text-gray-800">
                     {{ doneCount }}
                     <span class="text-xs font-normal text-gray-400">/ {{ allCheckpoints.length }}</span>
@@ -98,9 +98,9 @@ function formatDateShort(iso: string) {
             </div>
 
             <div class="bg-white rounded-xl p-4" style="border:0.5px solid #E3E1D8">
-                <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-2">Phase ทั้งหมด</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2">Phase ทั้งหมด</div>
                 <div class="text-sm font-semibold text-gray-800">{{ phases.length }}</div>
-                <div class="text-[10px] text-gray-400 mt-1">
+                <div class="text-xs text-gray-400 mt-1">
                     {{phases.filter(p => p.status === 'IN_PROGRESS').length}} กำลังดำเนินการ
                 </div>
             </div>
@@ -113,7 +113,7 @@ function formatDateShort(iso: string) {
                     <Icon icon="lucide:camera" style="width:14px;height:14px;color:#B4B2A9" />
                     <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">ภาพหน้างานล่าสุด</span>
                 </div>
-                <span class="text-[10px] text-gray-300">{{ photos.length }} รูป</span>
+                <span class="text-xs text-gray-300">{{ photos.length }} รูป</span>
             </div>
 
             <div class="p-4">

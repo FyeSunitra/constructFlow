@@ -84,7 +84,7 @@ function close() {
             </div>
 
             <div
-                class="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mt-2 pb-1"
+                class="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 pb-1"
                 style="border-bottom: 0.5px solid #f1efe8"
             >
                 ลำดับ Phase และ Checkpoint
@@ -101,7 +101,7 @@ function close() {
                         style="background: #f7f6f2; border-bottom: 0.5px solid #e3e1d8"
                     >
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-semibold px-2 py-0.5 rounded"
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded"
                                 style="background: #e1f5ee; color: #0f6e56"
                             >
                                 Phase {{ i + 1 }}
@@ -115,12 +115,12 @@ function close() {
 
                     <!-- Checkpoints Body -->
                     <div class="p-3 bg-white">
-                        <div class="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
                             Checkpoints
                         </div>
                         <div v-if="phase.checkpoints && phase.checkpoints.length > 0" class="flex flex-col gap-2">
                             <div v-for="(cp, ci) in phase.checkpoints" :key="ci" class="flex items-start gap-2.5">
-                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-semibold mt-0.5">
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-semibold mt-0.5">
                                     {{ ci + 1 }}
                                 </span>
                                 <div class="text-xs text-gray-600 pt-0.5 break-words flex-1">

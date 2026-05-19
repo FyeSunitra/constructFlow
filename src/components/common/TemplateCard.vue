@@ -37,19 +37,19 @@ const budgetTotal = computed(() =>
         <!-- Meta chips -->
         <div class="flex flex-wrap gap-1.5">
             <!-- Phases -->
-            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium"
                 style="background:#E1F5EE;color:#0F6E56">
                 <Icon icon="lucide:layers" style="width:9px;height:9px" />
                 {{ template.phases.length }} Phase
             </span>
             <!-- Checkpoints -->
-            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium"
                 style="background:#E6F1FB;color:#185FA5">
                 <Icon icon="lucide:check-square" style="width:9px;height:9px" />
                 {{ cpCount }} Checkpoint
             </span>
             <!-- Budget -->
-            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium"
                 style="background:#FAEEDA;color:#854F0B">
                 <Icon icon="lucide:banknote" style="width:9px;height:9px" />
                 ฿{{ budgetTotal }}
@@ -63,9 +63,9 @@ const budgetTotal = computed(() =>
                 <span class="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center text-[9px] font-semibold"
                     style="background:#E1F5EE;color:#0F6E56">{{ i + 1 }}</span>
                 <span class="truncate">{{ phase.name }}</span>
-                <span class="flex-shrink-0 text-gray-300 text-[10px]">{{ phase.checkpoints.length }} cp</span>
+                <span class="flex-shrink-0 text-gray-300 text-xs">{{ phase.checkpoints.length }} cp</span>
             </div>
-            <div v-if="template.phases.length > 3" class="text-[10px] text-gray-400 pl-6">
+            <div v-if="template.phases.length > 3" class="text-xs text-gray-400 pl-6">
                 +{{ template.phases.length - 3 }} phase เพิ่มเติม
             </div>
         </div>

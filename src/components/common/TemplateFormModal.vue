@@ -152,7 +152,7 @@ function close() {
             </NFormItem>
 
             <div
-                class="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-3 pb-2"
+                class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 pb-2"
                 style="border-bottom: 0.5px solid #f1efe8"
             >
                 กำหนด Phase และ Checkpoint

@@ -80,7 +80,7 @@ const endTs = computed({
             style="background: #f7f6f2; border-bottom: 0.5px solid #e3e1d8"
         >
             <span
-                class="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded"
+                class="flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded"
                 style="background: #e1f5ee; color: #0f6e56"
             >
                 Phase {{ index + 1 }}
@@ -118,7 +118,7 @@ const endTs = computed({
             <!-- Budget + % -->
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <div class="text-[12px] text-gray-400 mb-1">
+                    <div class="text-xs text-gray-400 mb-1">
                         งบประมาณ Phase (บาท)
                     </div>
                     <NInputNumber
@@ -132,7 +132,7 @@ const endTs = computed({
                     />
                 </div>
                 <div>
-                    <div class="text-[12px] text-gray-400 mb-1">% จากงบรวม</div>
+                    <div class="text-xs text-gray-400 mb-1">% จากงบรวม</div>
                     <div
                         class="h-8 flex items-center px-3 rounded-lg text-sm text-gray-500"
                         style="background: #f7f6f2; border: 0.5px solid #e3e1d8"
@@ -145,7 +145,7 @@ const endTs = computed({
             <!-- Phase dates -->
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <div class="text-[12px] text-gray-400 mb-1">
+                    <div class="text-xs text-gray-400 mb-1">
                         วันเริ่ม Phase
                     </div>
                     <NDatePicker
@@ -158,7 +158,7 @@ const endTs = computed({
                     />
                 </div>
                 <div>
-                    <div class="text-[12px] text-gray-400 mb-1">
+                    <div class="text-xs text-gray-400 mb-1">
                         วันสิ้นสุด Phase
                     </div>
                     <NDatePicker
@@ -175,7 +175,7 @@ const endTs = computed({
             <!-- Checkpoints -->
             <div>
                 <div
-                    class="text-[12px] font-medium text-gray-400 uppercase tracking-wider mb-2"
+                    class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2"
                 >
                     Checkpoints
                 </div>
@@ -186,7 +186,7 @@ const endTs = computed({
                         class="flex items-center gap-2"
                     >
                         <span
-                            class="text-[12px] text-gray-300 w-4 text-right flex-shrink-0"
+                            class="text-xs text-gray-300 w-4 text-right flex-shrink-0"
                             >{{ ci + 1 }}</span
                         >
                         <NInput
