@@ -223,7 +223,7 @@ async function onReject(reqId: string, note?: string) {
                             <!-- Phase header -->
                             <div class="flex items-center gap-3 px-4 py-3.5 cursor-pointer select-none"
                                 :style="{ background: phaseStyle(phase).header }" @click="togglePhase(phase.id)">
-                                <span class="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded"
+                                <span class="flex-shrink-0 text-xs font-semibold px-2 py-0.5 rounded"
                                     style="background:rgba(255,255,255,0.2);color:#fff">
                                     Phase {{ phase.order_index }}
                                 </span>
@@ -234,7 +234,7 @@ async function onReject(reqId: string, note?: string) {
                                             phaseProgress(phase).total }} Checkpoint
                                     </div>
                                 </div>
-                                <span class="flex-shrink-0 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                                <span class="flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-full"
                                     style="background:rgba(255,255,255,0.2);color:#fff">
                                     {{ PHASE_STATUS_LABEL[phase.status ?? 'PENDING'] ?? 'PENDING' }}
                                 </span>
@@ -278,7 +278,7 @@ async function onReject(reqId: string, note?: string) {
                                                 </div>
                                             </div>
                                             <span
-                                                class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-semibold"
+                                                class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-xs font-semibold"
                                                 :style="{
                                                     background: EXPENSE_STATUS_META[expense.status as ExpenseStatus].bg,
                                                     color: EXPENSE_STATUS_META[expense.status as ExpenseStatus].color,

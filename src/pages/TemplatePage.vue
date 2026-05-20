@@ -4,7 +4,7 @@ export default { name: 'TemplatePage' }
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NButton, NInput, NEmpty, useMessage } from 'naive-ui'
+import { NButton, NEmpty, useMessage } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 import type { Template } from '@/types/template'
@@ -15,8 +15,10 @@ const message = useMessage()
 const { isMobile } = useBreakpoint()
 
 const showModal = ref(false)
+const showViewModal = ref(false)
 const templates = ref<Template[]>([])
 const editingTpl = ref<Template | null>(null)
+const viewingTpl = ref<Template | null>(null)
 const saving = ref(false)
 
 const perPage = 9
@@ -58,6 +60,11 @@ function openCreate() {
 function openEdit(tpl: Template) {
     editingTpl.value = tpl
     showModal.value = true
+}
+
+function openView(tpl: Template) {
+    viewingTpl.value = tpl
+    showViewModal.value = true
 }
 
 function deleteTpl(tpl: Template) {
@@ -131,7 +138,7 @@ watch([search], () => {
                 <template v-if="filtered.length > 0">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <TemplateCard v-for="tpl in filtered" :key="tpl.id" :template="tpl" @edit="openEdit"
-                            @delete="deleteTpl" />
+                            @delete="deleteTpl" @view="openView" />
                     </div>
                 </template>
 
@@ -145,4 +152,5 @@ watch([search], () => {
     </div>
 
     <TemplateFormModal v-model:show="showModal" :editing="editingTpl" :saving="saving" @saved="onSaved" />
+    <TemplateViewModal v-model:show="showViewModal" :template="viewingTpl" />
 </template>

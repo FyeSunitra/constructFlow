@@ -38,6 +38,7 @@ declare module 'vue' {
     TemplateCard: typeof import('./components/common/TemplateCard.vue')['default']
     TemplateFormModal: typeof import('./components/common/TemplateFormModal.vue')['default']
     TemplatePhaseEditor: typeof import('./components/common/TemplatePhaseEditor.vue')['default']
+    TemplateViewModal: typeof import('./components/common/TemplateViewModal.vue')['default']
     UserAvatar: typeof import('./components/common/UserAvatar.vue')['default']
     UserFormModal: typeof import('./components/common/UserFormModal.vue')['default']
     UserRoleTag: typeof import('./components/common/UserRoleTag.vue')['default']

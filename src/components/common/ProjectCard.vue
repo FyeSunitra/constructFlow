@@ -34,7 +34,7 @@ const meta = STATUS_META[props.project.status] ?? { label: props.project.status,
         <!-- Status badge + name (pad right when CEO to avoid overlap with edit btn) -->
         <div class="flex items-start justify-between gap-2" :class="isCEO ? 'pr-8' : ''">
             <div class="text-sm font-semibold text-gray-800 leading-snug flex-1">{{ project.name }}</div>
-            <span class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="flex-shrink-0 inline-flex items-center h-5 px-2 rounded-full text-xs font-medium"
                 :style="{ background: meta.bg, color: meta.color }">
                 {{ meta.label }}
             </span>
@@ -54,12 +54,12 @@ const meta = STATUS_META[props.project.status] ?? { label: props.project.status,
 
         <!-- Meta chips -->
         <div class="flex gap-1.5 flex-wrap mt-auto">
-            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium"
                 style="background:#E1F5EE;color:#0F6E56">
                 <Icon icon="lucide:layers" style="width:9px;height:9px" />
                 {{ project._count.phases }} Phase
             </span>
-            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-[10px] font-medium"
+            <span class="inline-flex items-center gap-1 h-5 px-2 rounded-full text-xs font-medium"
                 style="background:#FAEEDA;color:#854F0B">
                 <Icon icon="lucide:users" style="width:9px;height:9px" />
                 {{ project._count.assignments }} คน

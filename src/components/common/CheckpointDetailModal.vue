@@ -104,24 +104,24 @@ function close() { emit('update:show', false) }
             <!-- Meta grid -->
             <div class="grid grid-cols-2 gap-2">
                 <div class="rounded-xl p-3" style="background:#F7F6F2">
-                    <div class="text-[10px] text-gray-400 mb-1">วันที่เสร็จ</div>
+                    <div class="text-xs text-gray-400 mb-1">วันที่เสร็จ</div>
                     <div class="text-sm font-medium text-gray-800">{{ formatDate(checkpoint.completed_at) }}</div>
                 </div>
                 <div class="rounded-xl p-3" style="background:#F7F6F2">
-                    <div class="text-[10px] text-gray-400 mb-1">เริ่มดำเนินการ</div>
+                    <div class="text-xs text-gray-400 mb-1">เริ่มดำเนินการ</div>
                     <div class="text-sm font-medium text-gray-800">{{ formatDate(checkpoint.started_at) }}</div>
                 </div>
             </div>
 
             <!-- Note -->
             <div v-if="checkpoint.note_text">
-                <div class="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">หมายเหตุ</div>
+                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">หมายเหตุ</div>
                 <div class="rounded-xl p-3 text-sm text-gray-600 leading-relaxed" style="background:#F7F6F2">
                     {{ checkpoint.note_text }}
                 </div>
             </div>
             <div v-else>
-                <div class="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">หมายเหตุ</div>
+                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">หมายเหตุ</div>
                 <div class="text-sm text-gray-300 italic">ไม่มีหมายเหตุ</div>
             </div>
 
@@ -144,7 +144,7 @@ function close() { emit('update:show', false) }
 
             <!-- Logs -->
             <div>
-                <div class="text-[10px] font-medium text-gray-400 uppercase tracking-wider mb-2">ประวัติการอัพเดท</div>
+                <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">ประวัติการอัพเดท</div>
 
                 <div v-if="logsLoading" class="flex flex-col gap-2">
                     <div v-for="i in 2" :key="i" class="h-14 rounded-xl animate-pulse" style="background:#F1EFE8" />
@@ -177,8 +177,8 @@ function close() { emit('update:show', false) }
                                 </span>
                             </div>
                             <div class="text-right">
-                                <div class="text-[10px] text-gray-400">{{ formatDateTime(log.created_at) }}</div>
-                                <div v-if="log.creator" class="text-[10px] text-gray-400">
+                                <div class="text-xs text-gray-400">{{ formatDateTime(log.created_at) }}</div>
+                                <div v-if="log.creator" class="text-xs text-gray-400">
                                     {{ log.creator.first_name }} {{ log.creator.last_name }}
                                 </div>
                             </div>
