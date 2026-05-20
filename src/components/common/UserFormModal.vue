@@ -29,6 +29,20 @@ const form = reactive<UserForm>({
     role: null, password: '', is_active: true,
 })
 
+function resetForm() {
+    Object.assign(form, {
+        username: '',
+        email: '',
+        first_name: '',
+        last_name: '',
+        role: null,
+        password: '',
+        is_active: true,
+    })
+    showPass.value = false
+    formRef.value?.restoreValidation()
+}
+
 watch(() => props.editing, (user) => {
     if (user) {
         Object.assign(form, {
@@ -78,7 +92,15 @@ const rules = computed<FormRules>(() => ({
 function close() { emit('update:show', false) }
 async function handleSubmit() {
     try { await formRef.value?.validate() } catch { return }
-    emit('saved', { ...form }, props.editing?.id ?? null)
+
+    const payload: UserForm = { ...form }
+
+    if (isEdit.value && !payload.password?.trim()) {
+        delete (payload as Partial<UserForm>).password
+    }
+
+    emit('saved', payload, props.editing?.id ?? null)
+    resetForm()
     close()
 }
 </script>

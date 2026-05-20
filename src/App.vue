@@ -1,13 +1,22 @@
 <script setup lang="ts">
-import { NMessageProvider, NDialogProvider, NNotificationProvider } from 'naive-ui'
+import {
+  NConfigProvider,
+  NMessageProvider,
+  NDialogProvider,
+  NNotificationProvider,
+  thTH,
+  dateThTH,
+} from 'naive-ui'
 </script>
 
 <template>
-  <NMessageProvider>
-    <NDialogProvider>
-      <NNotificationProvider>
-        <router-view />
-      </NNotificationProvider>
-    </NDialogProvider>
-  </NMessageProvider>
+  <NConfigProvider :locale="thTH" :date-locale="dateThTH">
+    <NMessageProvider>
+      <NDialogProvider>
+        <NNotificationProvider>
+          <router-view />
+        </NNotificationProvider>
+      </NDialogProvider>
+    </NMessageProvider>
+  </NConfigProvider>
 </template>

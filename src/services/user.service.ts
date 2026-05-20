@@ -26,4 +26,9 @@ export const userService = {
     const res = await http.get(`/users${query}`)
     return res as ListResponse<User>
   },
+
+  async updateUser(id: string, payload: UserForm) {
+    return http.patch(`/users/${id}`, payload)
+  }
+
 }

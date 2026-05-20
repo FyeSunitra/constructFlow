@@ -50,12 +50,18 @@ function deleteUser(user: User) {
 const onSaved = async (form: UserForm, id: string | null) => {
     try {
         if (id) {
+            await userService.updateUser(id, form)
             message.success('อัปเดตสำเร็จ')
+            fetchUsers()
         } else {
             await userService.createUser(form)
             message.success('สร้างผู้ใช้งานสำเร็จ')
             fetchUsers()
         }
+
+        editingUser.value = null
+        showModal.value = false
+
     } catch (err: any) {
         message.error(err?.message || 'เกิดข้อผิดพลาด')
     }

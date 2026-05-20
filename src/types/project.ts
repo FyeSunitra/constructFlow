@@ -53,6 +53,7 @@ export interface ProjectDetail {
   name: string
   description: string
   status: ProjectStatus
+  budget_total: number
   start_date: string | null
   end_date: string | null
   owner_name: string | null
@@ -73,6 +74,7 @@ export interface Project {
   start_date: string | null
   end_date: string | null
   owner_name: string
+  budget_total?: number
   is_active: boolean
   created_at: string
   _count: {
@@ -99,6 +101,7 @@ export interface CreateProjectPayload {
   name: string
   description: string
   template_id: string
+  budget_total: number
   start_date: string
   end_date: string
   owner_name: string

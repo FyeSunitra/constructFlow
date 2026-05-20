@@ -78,8 +78,7 @@ watch(() => props.show, async (visible) => {
             form.end_date = d.end_date ? d.end_date.split('T')[0] : ''
             form.template_id = d.template_id ?? ''
             form.assignments = (d.assignments ?? []).map((a: any) => a.engineer_id)
-            form.total_budget = d.phases?.reduce((s: number, p: any) =>
-                s + Number(p.budget_estimate ?? 0), 0) ?? 0
+            form.total_budget = Number(d.budget_total ?? 0)
             form.phases = (d.phases ?? [])
                 .slice()
                 .sort((a: any, b: any) => a.order_index - b.order_index)
@@ -116,10 +115,18 @@ const templateOptions = computed(() =>
     templates.value.map(t => ({ label: t.name, value: t.id })),
 )
 
+const initializingForm = ref(false)
+
 watch(() => form.template_id, (id) => {
-    if (isEdit.value) return
+    if (initializingForm.value) return
+
     const tpl = templates.value.find(t => String(t.id) === String(id))
-    if (!tpl) { form.phases = []; return }
+
+    if (!tpl) {
+        form.phases = []
+        return
+    }
+
     form.phases = tpl.phases
         .slice()
         .sort((a, b) => a.order_index - b.order_index)
@@ -156,13 +163,26 @@ const totalBudget = computed(() =>
     form.phases.reduce((s, p) => s + Number(p.budget_estimate ?? 0), 0),
 )
 
+function formatLocalDate(ts: number) {
+    const d = new Date(ts)
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+}
+
 const startTs = computed({
-    get: () => form.start_date ? new Date(form.start_date).getTime() : null,
-    set: (v) => { form.start_date = v ? new Date(v).toISOString().split('T')[0] : '' },
+    get: () => form.start_date ? new Date(`${form.start_date}T00:00:00`).getTime() : null,
+    set: (v) => {
+        form.start_date = v ? formatLocalDate(v) : ''
+    },
 })
+
 const endTs = computed({
-    get: () => form.end_date ? new Date(form.end_date).getTime() : null,
-    set: (v) => { form.end_date = v ? new Date(v).toISOString().split('T')[0] : '' },
+    get: () => form.end_date ? new Date(`${form.end_date}T00:00:00`).getTime() : null,
+    set: (v) => {
+        form.end_date = v ? formatLocalDate(v) : ''
+    },
 })
 
 function addPhase() {
@@ -183,8 +203,34 @@ function handleFileChange(data: { fileList: UploadFileInfo[] }) {
 const rules: FormRules = {
     name: [{ required: true, trigger: ['blur', 'input'], message: 'กรุณากรอกชื่อโครงการ' }],
     owner_name: [{ required: true, trigger: ['blur', 'input'], message: 'กรุณากรอกเจ้าของโครงการ' }],
-    start_date: [{ required: true, trigger: 'change', message: 'กรุณาเลือกวันเริ่ม', type: 'any' }],
-    end_date: [{ required: true, trigger: 'change', message: 'กรุณาเลือกวันสิ้นสุด', type: 'any' }],
+    template_id: [
+        { required: true, trigger: 'change', message: 'กรุณาเลือก Template' }
+    ],
+    start_date: [
+        { required: true, trigger: 'change', message: 'กรุณาเลือกวันเริ่ม', type: 'any' },
+        {
+            trigger: 'change',
+            validator() {
+                if (!form.start_date || !form.end_date) return true
+                return form.start_date <= form.end_date
+                    ? true
+                    : new Error('วันเริ่มต้องไม่มากกว่าวันสิ้นสุด')
+            },
+        },
+    ],
+
+    end_date: [
+        { required: true, trigger: 'change', message: 'กรุณาเลือกวันสิ้นสุด', type: 'any' },
+        {
+            trigger: 'change',
+            validator() {
+                if (!form.start_date || !form.end_date) return true
+                return form.end_date >= form.start_date
+                    ? true
+                    : new Error('วันสิ้นสุดต้องไม่น้อยกว่าวันเริ่ม')
+            },
+        },
+    ]
 }
 
 const totalPhaseBudget = computed(() =>
@@ -298,7 +344,7 @@ const modalStyle = computed(() =>
             <div class="text-sm font-semibold uppercase tracking-wider mb-3 pb-2"
                 style="border-bottom:0.5px solid #F1EFE8">เลือก Template</div>
 
-            <NFormItem label="Template โครงการ">
+            <NFormItem label="Template โครงการ" path="template_id">
                 <NSelect v-model:value="form.template_id" :options="templateOptions" :loading="loadingTpls"
                     placeholder="เลือกแม่แบบโครงการ (ถ้ามี)" clearable />
             </NFormItem>
