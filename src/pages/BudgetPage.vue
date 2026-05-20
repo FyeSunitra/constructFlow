@@ -68,7 +68,7 @@ onMounted(() => {
 // ─── Budget stats ─────────────────────────────────────────────────────────────
 
 const totalBudget = computed(() =>
-    project.value?.phases.reduce((s, p) => s + Number(p.budget_estimate ?? 0), 0) ?? 0,
+    Number(project.value?.budget_total ?? 0)
 )
 
 const paidAmount = computed(() =>

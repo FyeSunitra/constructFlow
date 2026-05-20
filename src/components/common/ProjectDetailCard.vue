@@ -24,7 +24,7 @@ const currentPhase = computed(() =>
 )
 
 const totalBudget = computed(() =>
-    props.project.phases.reduce((s, p) => s + Number(p.budget_estimate ?? 0), 0),
+    Number(props.project.budget_total ?? 0)
 )
 
 const engineers = computed(() =>
@@ -71,7 +71,7 @@ const engineers = computed(() =>
             <div>
                 <div class="text-xs text-gray-400 uppercase tracking-wider mb-1">งบประมาณรวม</div>
                 <div class="text-md font-medium">
-                    ฿{{ totalBudget.toLocaleString('th-TH') }}
+                    ฿{{ totalBudget?.toLocaleString('th-TH') ?? '—' }}
                 </div>
             </div>
         </div>

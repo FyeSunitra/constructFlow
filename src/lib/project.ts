@@ -20,6 +20,7 @@ export function buildProjectPayload(form: ProjectForm): CreateProjectPayload {
     name: form.name.trim(),
     description: form.description.trim(),
     template_id: form.template_id,
+    budget_total: Number(form.total_budget ?? 0),
     start_date: form.start_date,
     end_date: form.end_date,
     owner_name: form.owner_name.trim(),
