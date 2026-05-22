@@ -3,7 +3,7 @@ export default { name: 'DailyUpdateFeed' }
 </script>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { NTimeline, NTimelineItem, NDatePicker, NButton } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import DailyUpdateCard, { type DailyUpdateItem } from './DailyUpdateCard.vue'
@@ -16,6 +16,7 @@ const props = defineProps<{
     currentPhase: string
     todayStr: string
     alreadyPostedToday: boolean
+    role: string
 }>()
 
 const emit = defineEmits<{
@@ -104,11 +105,12 @@ function formatSubDate(dateStr: string) {
             </div>
 
             <!-- Add button -->
-            <NButton :disabled="alreadyPostedToday" style="background:#EF9F27;border:none;color:#fff"
-                @click="emit('add')">
+            <NButton v-if="role !== 'CEO'" :disabled="alreadyPostedToday"
+                style="background:#EF9F27;border:none;color:#fff" @click="emit('add')">
                 <template #icon>
                     <Icon icon="lucide:plus" style="width:14px;height:14px" />
                 </template>
+
                 {{ alreadyPostedToday ? 'บันทึกแล้ววันนี้' : 'เพิ่มบันทึก' }}
             </NButton>
         </div>

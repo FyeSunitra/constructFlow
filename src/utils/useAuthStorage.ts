@@ -8,15 +8,6 @@ type AuthStorage = {
   user?: User;
 };
 
-function getAuth(): AuthStorage | null {
-  try {
-    const value = localStorage.getItem(KeyStorage.AUTH);
-    return value ? JSON.parse(value) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function setAuth(data: AuthStorage) {
   localStorage.setItem(KeyStorage.AUTH, JSON.stringify(data));
 }

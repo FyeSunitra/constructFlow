@@ -6,7 +6,7 @@ export default { name: 'UserManagementPage' }
 import { ref, computed, onMounted, watch } from 'vue'
 import {
     NButton, NInput, NSelect, NEmpty, NSwitch,
-    NPopconfirm, NTooltip, NSpace, useMessage,
+    NPopconfirm, useMessage,
 } from 'naive-ui'
 import { Icon } from '@iconify/vue'
 import { type User, type UserForm, type UserRole } from '@/types/user'
