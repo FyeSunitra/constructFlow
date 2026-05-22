@@ -8,7 +8,6 @@ import {
     NModal, NForm, NFormItem, NInput, NButton, NUpload,
     type FormInst, type FormRules, type UploadFileInfo,
 } from 'naive-ui'
-import { Icon } from '@iconify/vue'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 
 const props = defineProps<{

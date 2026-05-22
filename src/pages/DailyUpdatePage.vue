@@ -36,11 +36,6 @@ const alreadyPostedToday = computed(() =>
     updates.value.some(u => u.date === todayStr.value)
 )
 
-function offsetDate(n: number) {
-    const d = new Date(); d.setDate(d.getDate() + n)
-    return d.toISOString().split('T')[0]
-}
-
 async function fetchProject() {
     const id = route.params.id as string
     if (!id) return
@@ -126,7 +121,8 @@ async function onSaved(
                 </template>
 
                 <DailyUpdateFeed :updates="updates" :loading="loadingFeed" :current-phase="currentPhase"
-                    :today-str="todayStr" :already-posted-today="alreadyPostedToday" @add="showModal = true" />
+                    :today-str="todayStr" :already-posted-today="alreadyPostedToday" :role="auth.user?.role"
+                    @add="showModal = true" />
 
             </main>
         </div>

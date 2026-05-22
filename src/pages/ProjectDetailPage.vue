@@ -4,7 +4,7 @@ export default { name: 'ProjectDetailPage' }
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { projectService } from '@/services/project.service'
 import { type ProjectDetail } from '@/types/project'
@@ -13,7 +13,6 @@ import ProjectOverviewTab from '@/components/common/ProjectOverviewTab.vue'
 import ProjectDocumentsTab from '@/components/common/ProjectDocumentsTab.vue'
 
 const route = useRoute()
-const router = useRouter()
 const message = useMessage()
 
 const project = ref<ProjectDetail | null>(null)

@@ -22,7 +22,6 @@ declare module 'vue' {
     ExpenseDetailModal: typeof import('./components/common/ExpenseDetailModal.vue')['default']
     ExpenseRequestModal: typeof import('./components/common/ExpenseRequestModal.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
-    NewProjectModal: typeof import('./components/common/NewProjectModal.vue')['default']
     PhaseCard: typeof import('./components/common/PhaseCard.vue')['default']
     ProjectCard: typeof import('./components/common/ProjectCard.vue')['default']
     ProjectDetailCard: typeof import('./components/common/ProjectDetailCard.vue')['default']
